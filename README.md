@@ -1,3 +1,6 @@
+<img width="7905" height="5308" alt="diagram (1)" src="https://github.com/user-attachments/assets/d3000294-7280-4eba-9939-39f172a32067" />
+
+
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        InventoryPro Web App                            │
 │           (Dashboard.html / stock.html / Client UI)                    │
