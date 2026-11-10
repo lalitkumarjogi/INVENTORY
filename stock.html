@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enterprise Stock Entry</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+
+<style>
+/* --- PROFESSIONAL UI VARIABLES --- */
+:root {
+  --primary: #2563eb; 
+  --primary-hover: #1d4ed8;
+  --bg-app: #f1f5f9; 
+  --surface: #ffffff;
+  --text-dark: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --input-bg: #ffffff;
+  --radius-lg: 16px;
+  --radius-md: 8px;
+  --shadow-card: 0 10px 40px -10px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.03);
+}
+
+body { font-family: 'Inter', sans-serif; background-color: var(--bg-app); color: var(--text-dark); margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+.form-container { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); max-width: 900px; width: 100%; border: 1px solid rgba(226, 232, 240, 0.8); animation: fadeUp 0.4s ease-out; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+.form-header { padding: 24px 32px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.header-text h2 { font-weight: 700; font-size: 20px; margin: 0 0 4px 0; color: var(--text-dark); letter-spacing: -0.5px; }
+.header-text p { color: var(--text-muted); font-size: 13px; margin: 0; font-weight: 500; }
+.brand-logo { height: 38px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); background: white; padding: 4px; border: 1px solid var(--border-color); }
+
+.form-body { padding: 32px; }
+.form-group { margin-bottom: 20px; }
+label { font-size: 13px; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+label i { color: var(--text-muted); font-size: 12px; }
+
+.form-control, .form-select { height: 42px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--input-bg); font-size: 14px; color: var(--text-dark); transition: all 0.2s ease; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); }
+.form-control:focus, .form-select:focus { border-color: var(--primary); background-color: var(--surface); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); outline: none; }
+input:not([type="number"]) { text-transform: uppercase; }
+input::placeholder { text-transform: none; color: #94a3b8; }
+
+.select2-container .select2-selection--single { height: 42px !important; border: 1px solid var(--border-color) !important; border-radius: var(--radius-md) !important; background-color: var(--input-bg) !important; display: flex; align-items: center; padding: 0 10px; font-size: 14px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); }
+.select2-container--open .select2-selection--single { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important; }
+.select2-container--default .select2-selection--single .select2-selection__arrow { height: 40px !important; }
+.select2-dropdown { border: 1px solid var(--primary) !important; border-radius: var(--radius-md) !important; box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important; font-size: 14px; }
+
+.location-bar { display: none; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 10px 16px; font-size: 13px; margin-top: -5px; margin-bottom: 20px; align-items: center; gap: 10px; animation: fadeIn 0.3s ease; }
+.extra-section { display: none; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px 20px 0 20px; margin-bottom: 20px; }
+.po-section { background: #f0f9ff; border: 1px dashed #7dd3fc; border-radius: var(--radius-md); padding: 15px; margin-bottom: 15px; }
+
+.form-footer { padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 15px; margin-top: 10px; }
+.btn-submit { height: 44px; padding: 0 24px; border-radius: var(--radius-md); background: var(--primary); color: #fff; font-weight: 600; font-size: 14px; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2); }
+.btn-submit:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
+.btn-cancel { height: 44px; padding: 0 20px; border-radius: var(--radius-md); background: white; color: var(--text-muted); font-weight: 600; font-size: 14px; border: 1px solid var(--border-color); transition: all 0.2s ease; }
+.btn-cancel:hover { background: #f8fafc; color: var(--text-dark); }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+</style>
+</head>
+
+<body>
+
+<div class="form-container">
+  <div class="form-header">
+    <div class="header-text">
+      <h2>Stock Entry Form</h2>
+      <p>Select an item and log the transaction details</p>
+    </div>
+    <img src="https://bhtindia.com/wp-content/uploads/2025/09/BHT-Logo-e1756978341313-1536x715.jpg" alt="BHT Logo" class="brand-logo">
+  </div>
+
+  <div class="form-body">
+    <form id="stockForm">
+      
+      <div class="row">
+        <div class="col-md-12 form-group">
+          <label><i class="fas fa-box-open"></i> Selected Item <span class="text-danger ms-1">*</span></label>
+          <select id="item" class="form-control"></select>
+        </div>
+      </div>
+
+      <div class="location-bar" id="locationBadge">
+        <i class="fas fa-map-marker-alt text-primary"></i>
+        <span style="color: #1e3a8a; font-weight: 600;">Location:</span>
+        <span id="locationText" style="color: #1e40af;"></span>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 form-group">
+          <label><i class="fas fa-exchange-alt"></i> Type <span class="text-danger ms-1">*</span></label>
+          <select id="type" class="form-select">
+            <option value="IN">IN (Receive)</option>
+            <option value="OUT">OUT (Issue)</option>
+          </select>
+        </div>
+        <div class="col-md-4 form-group">
+          <label><i class="fas fa-tags"></i> Method <span class="text-danger ms-1">*</span></label>
+          <select id="method" class="form-select"></select>
+        </div>
+        <div class="col-md-4 form-group">
+          <label><i class="fas fa-hashtag"></i> Quantity <span class="text-danger ms-1">*</span></label>
+          <div class="input-group">
+            <input type="number" id="qty" class="form-control" min="1" placeholder="Enter Qty">
+          </div>
+        </div>
+      </div>
+
+      <div class="extra-section row" id="extraSection">
+        
+        <div class="col-md-12 form-group po-section" id="poSelectBox" style="display:none;">
+          <label><i class="fas fa-file-invoice-dollar text-primary"></i> Link Purchase Order (Optional)</label>
+          <select id="poList" class="form-control"></select>
+          <div id="poDetails" style="display:none; margin-top: 10px; font-size: 13px;">
+            <span class="badge bg-primary px-2 py-1 me-1" id="poOrderedBadge">Ordered: 0</span>
+            <span class="badge bg-secondary px-2 py-1" id="poReceivedBadge">Prev Received: 0</span>
+            <div class="form-check mt-3" id="backorderDiv" style="display:none;">
+              <input class="form-check-input" type="checkbox" id="createBackorder">
+              <label class="form-check-label text-danger fw-bold" for="createBackorder">
+                Shortfall detected. Auto-create Backorder PO for missing items?
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 form-group" id="vendorBox">
+          <label><i class="fas fa-truck"></i> Vendor/Supplier <span class="text-danger ms-1">*</span></label>
+          <select id="vendor" class="form-control"></select>
+        </div>
+        <div class="col-md-6 form-group" id="invoiceBox">
+          <label><i class="fas fa-file-invoice"></i> Invoice No <span class="text-danger ms-1">*</span></label>
+          <input type="text" id="invoiceNo" class="form-control" placeholder="e.g. INV-1020">
+        </div>
+        <div class="col-md-6 form-group" id="voucherBox">
+          <label><i class="fas fa-receipt"></i> Voucher No <span class="text-danger ms-1">*</span></label>
+          <input type="text" id="voucherNo" class="form-control" placeholder="e.g. VCH-001">
+        </div>
+        <div class="col-md-6 form-group" id="partyBox">
+          <label><i class="fas fa-users"></i> Party/Project <span class="text-danger ms-1">*</span></label>
+          <input type="text" id="partyDetails" class="form-control" placeholder="Client Name">
+        </div>
+        <div class="col-md-6 form-group" id="refBox">
+          <label><i class="fas fa-barcode"></i> Reference Doc <span class="text-danger ms-1">*</span></label>
+          <input type="text" id="referenceNo" class="form-control" placeholder="PO or Doc No">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 form-group">
+          <label><i class="fas fa-comment-dots"></i> Remarks / Notes <span class="text-danger ms-1">*</span></label>
+          <input type="text" id="remarks" class="form-control" placeholder="Brief description of this entry...">
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button type="button" class="btn-cancel" onclick="resetForm()">Clear</button>
+        <button type="button" class="btn-submit" onclick="triggerSubmitFlow()">
+          <i class="fas fa-check-circle"></i> Authorize Transaction
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
+<script>
+let itemMap={}, vendorMap={}, openPOs=[];
+
+const METHODS={
+  IN:["Purchase","Manufacture","Return"],
+  OUT:["Sales","Damaged","Return"]
+};
+
+$(document).ready(function(){
+  $('input:not([type="number"])').on('input', function() {
+    let start = this.selectionStart;
+    let end = this.selectionEnd;
+    this.value = this.value.toUpperCase();
+    this.setSelectionRange(start, end);
+  });
+
+  function initSelect2(id, placeholderText) {
+    $(id).select2({ placeholder: placeholderText, allowClear: true, width: '100%' });
+  }
+
+  // Load Data Simultaneously
+  google.script.run.withSuccessHandler(items=>{
+    $('#item').append('<option></option>');
+    items.forEach(i=>{
+      let displayText = `${i.code} | ${i.name}`;
+      if (i.category) displayText += ` | ${i.category}`;
+      if (i.subCategory) displayText += ` | ${i.subCategory}`;
+      $('#item').append(`<option value="${i.code}">${displayText}</option>`);
+      itemMap[i.code]=i; 
+    });
+    initSelect2('#item', 'Search by Name or Code...');
+  }).getItems();
+
+  google.script.run.withSuccessHandler(v=>{
+    $('#vendor').append('<option></option>');
+    v.forEach(x=>{ $('#vendor').append(`<option value="${x.code}">${x.name} (${x.code})</option>`); vendorMap[x.code]=x; });
+    initSelect2('#vendor', 'Search Vendor database...');
+  }).getVendors();
+
+  google.script.run.withSuccessHandler(pos=>{
+    openPOs = pos;
+    $('#poList').append('<option value="">-- No PO (Direct Purchase) --</option>');
+    pos.forEach(p => {
+      const shortVendor = p.vendor.length > 15 ? p.vendor.substring(0,15)+'...' : p.vendor;
+      $('#poList').append(`<option value="${p.poNumber}">${p.poNumber} | Item: ${p.itemCode} | Ven: ${shortVendor}</option>`);
+    });
+    initSelect2('#poList', 'Link to an Open PO...');
+  }).getOpenPOs();
+
+  updateMethod();
+});
+
+// Watchers
+$('#type').on('change', updateMethod);
+$('#method').on('change', toggleExtra);
+
+$('#item').on('change', function() {
+  const itemCode = $('#item').val();
+  const $badge = $('#locationBadge');
+  const $text = $('#locationText');
+  if (!itemCode) { $badge.hide(); return; }
+  $badge.css('display', 'flex');
+  $text.html('<i class="fas fa-circle-notch fa-spin"></i> Fetching...');
+  google.script.run.withSuccessHandler(function(i) {
+    if (i) $text.html(`<b>Line:</b> ${i.line || '-'} &nbsp;|&nbsp; <b>Rack:</b> ${i.rack || '-'} &nbsp;|&nbsp; <b>Box:</b> ${i.box || '-'}`);
+    else $text.html('<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Location Not Found</span>');
+  }).getItemLocation(itemCode); 
+});
+
+// PO Selection Logic
+$('#poList').on('change', function() {
+  const selectedPO = $(this).val();
+  if(!selectedPO) {
+    $('#poDetails').hide();
+    $('#item, #vendor').prop('disabled', false).val(null).trigger('change');
+    return;
+  }
+  const poData = openPOs.find(p => p.poNumber === selectedPO);
+  if(poData) {
+    $('#item').val(poData.itemCode).trigger('change').prop('disabled', true);
+    $('#vendor').val(poData.vendor).trigger('change').prop('disabled', true);
+    $('#poOrderedBadge').text(`Ordered Qty: ${poData.orderedQty}`);
+    $('#poReceivedBadge').text(`Previously Received: ${poData.receivedQty}`);
+    $('#poDetails').slideDown();
+    checkShortfall();
+  }
+});
+
+$('#qty').on('input', checkShortfall);
+
+function checkShortfall() {
+  const selectedPO = $('#poList').val();
+  if(!selectedPO) return;
+  const poData = openPOs.find(p => p.poNumber === selectedPO);
+  const actualQty = Number($('#qty').val()) || 0;
+  const totalReceived = poData.receivedQty + actualQty;
+  
+  if (actualQty > 0 && totalReceived < poData.orderedQty) {
+    $('#backorderDiv').slideDown();
+  } else {
+    $('#backorderDiv').slideUp();
+    $('#createBackorder').prop('checked', false);
+  }
+}
+
+function updateMethod(){
+  $('#method').empty();
+  METHODS[$('#type').val()].forEach(m=>$('#method').append(`<option value="${m}">${m}</option>`));
+  toggleExtra();
+}
+
+function toggleExtra(){
+  const t=$('#type').val(), m=$('#method').val();
+  $('#vendorBox, #invoiceBox, #voucherBox, #partyBox, #refBox, #poSelectBox').hide();
+  let showSection = false;
+
+  if(t==="IN" && m==="Purchase") { $('#poSelectBox, #vendorBox, #invoiceBox').show(); showSection=true; }
+  if(t==="IN" && m==="Manufacture") { $('#voucherBox').show(); showSection=true; }
+  if(t==="IN" && m==="Return") { $('#refBox').show(); showSection=true; }
+  if(t==="OUT" && m==="Sales") { $('#invoiceBox, #partyBox').show(); showSection=true; }
+  if(t==="OUT" && m==="Damaged") { $('#refBox').show(); showSection=true; }
+
+  if(showSection) $('#extraSection').fadeIn(200);
+}
+
+// THE VALIDATION FIX 
+function triggerSubmitFlow() {
+  let missing = [];
+  const selectedPO = $('#poList').val();
+  const selectedItem = $('#item').val() || (selectedPO ? openPOs.find(p => p.poNumber === selectedPO)?.itemCode : null);
+
+  if(!selectedItem) missing.push("Selected Item");
+  if(!$('#qty').val() || $('#qty').val()<=0) missing.push("Valid Quantity (Min 1)");
+  if(!$('#remarks').val()) missing.push("Remarks & Notes");
+
+  const t=$('#type').val(), m=$('#method').val();
+  
+  if(t==="IN" && m==="Purchase"){
+    // Only require vendor and invoice if NO PO is selected
+    if(!selectedPO) {
+      if(!$('#vendor').val()) missing.push("Vendor / Supplier");
+      if(!$('#invoiceNo').val()) missing.push("Invoice Number");
+    }
+  }
+  if(t==="IN" && m==="Manufacture" && !$('#voucherNo').val()) missing.push("Voucher No");
+  if(t==="IN" && m==="Return" && !$('#referenceNo').val()) missing.push("Reference Doc");
+  
+  if(t==="OUT" && m==="Sales"){
+    if(!$('#invoiceNo').val()) missing.push("Invoice Number");
+    if(!$('#partyDetails').val()) missing.push("Party / Project");
+  }
+  if(t==="OUT" && m==="Damaged" && !$('#referenceNo').val()) missing.push("Reference Doc");
+
+  if(missing.length > 0) {
+    Swal.fire({
+      icon: 'error', title: 'Missing Fields',
+      html: `<div style="text-align:left; font-size:13px; color:#475569;">Please complete the following:<br><ul style="margin-top:10px; color:#1e293b; font-weight:600;">${missing.map(i => `<li>${i}</li>`).join('')}</ul></div>`,
+      confirmButtonColor: '#2563eb', confirmButtonText: 'Review Form'
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: 'Confirm Authorization',
+    text: `You are about to log a ${t} transaction of ${$('#qty').val()} unit(s).`,
+    icon: 'question', showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#cbd5e1',
+    confirmButtonText: 'Submit Entry', cancelButtonText: 'Cancel', reverseButtons: true
+  }).then((result) => { if (result.isConfirmed) executeSubmit(); });
+}
+
+function executeSubmit() {
+  Swal.fire({ title: 'Processing Transaction...', text: 'Updating databases...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+  let finalVendor = $('#vendor').val();
+  let finalItem = $('#item').val();
+  const selectedPO = $('#poList').val();
+
+  // Safely pull vendor and item directly from the database if PO is selected 
+  if (selectedPO) {
+    const poObj = openPOs.find(p => p.poNumber === selectedPO);
+    if (poObj) {
+      finalVendor = poObj.vendor;
+      finalItem = poObj.itemCode;
+    }
+  }
+
+  const data = {
+    itemCode: finalItem,
+    type: $('#type').val(),
+    qty: +$('#qty').val(),
+    method: $('#method').val(),
+    vendorName: vendorMap[finalVendor]?.name || finalVendor,
+    invoiceNo: $('#invoiceNo').val(),
+    voucherNo: $('#voucherNo').val(),
+    partyDetails: $('#partyDetails').val(),
+    referenceNo: $('#referenceNo').val() || selectedPO,
+    remarks: $('#remarks').val(),
+    poNumber: selectedPO || null,
+    createBackorder: $('#createBackorder').is(':checked')
+  };
+
+  google.script.run
+    .withSuccessHandler(() => {
+      Swal.fire({ icon: 'success', title: 'Success!', text: 'Transaction logged and stock updated.', confirmButtonColor: '#10b981', timer: 2000, showConfirmButton: false });
+      setTimeout(() => location.reload(), 2000); 
+    })
+    .withFailureHandler(e => { Swal.fire({ icon: 'error', title: 'Transaction Failed', text: e.message || 'Server error occurred.', confirmButtonColor: '#ef4444' }); })
+    .processStock(data);
+}
+
+function resetForm() {
+  $('#qty, #remarks, #invoiceNo, #voucherNo, #partyDetails, #referenceNo').val('');
+  $('#poList').val(null).trigger('change'); 
+  $('#locationBadge').hide();
+  updateMethod();
+}
+</script>
+
+</body>
+</html>

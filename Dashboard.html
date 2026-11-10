@@ -1,0 +1,1947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>InventoryPro Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap5.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #1e40af;
+      --primary-gradient: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+      --primary-hover: #172554;
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --sidebar-text: #94a3b8;
+      --sidebar-active: #ffffff;
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
+      --border-light: #e2e8f0;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; overflow-x: hidden; }
+    .wrapper { display: flex; min-height: 100vh; width: 100vw; position: relative; }
+
+    /* sidebar */
+    .sidebar { width: 260px; flex-shrink: 0; background: var(--sidebar-bg); border-right: 1px solid #1e293b; color: var(--sidebar-text); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1050; box-shadow: 2px 0 10px rgba(0,0,0,.15); transition: transform .3s ease-in-out; }
+    .sidebar-header { padding: 16px 20px; background: #090d16; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e293b; }
+    .sidebar-header img { height: 34px; border-radius: 6px; background: #fff; padding: 2px; }
+    .sidebar-header h4 { margin: 0; color: #fff; font-size: 1.1rem; font-weight: 700; }
+    .sidebar-menu { padding: 14px 10px; list-style: none; margin: 0; flex-grow: 1; overflow-y: auto; }
+    .sidebar-menu li { margin-bottom: 4px; }
+    .sidebar-menu a { display: flex; align-items: center; padding: 10px 14px; color: var(--sidebar-text); text-decoration: none; border-radius: 6px; font-weight: 500; font-size: .88rem; transition: all .2s ease; cursor: pointer; user-select: none; }
+    .sidebar-menu a i.main-icon { width: 22px; font-size: 1rem; }
+    .sidebar-menu a:hover { background: var(--sidebar-hover); color: var(--sidebar-active); }
+    .sidebar-menu a.active.menu-link { background: var(--primary-color); color: var(--sidebar-active); font-weight: 600; }
+    .submenu { display: none; background: #090d16; padding-left: 6px; margin-top: 3px; border-radius: 6px; border-left: 2px solid #334155; }
+    .submenu.open { display: block !important; }
+    .submenu a { font-size: .84rem; padding: 8px 12px; color: #94a3b8; }
+    .submenu a:hover { color: #fff; background: var(--sidebar-hover); }
+    .submenu a::before { content: '•'; font-size: 1.2rem; line-height: 0; opacity: .5; margin-right: 8px; }
+    .toggle-icon { margin-left: auto; font-size: .75rem; transition: transform .3s ease; }
+    .active-parent .toggle-icon { transform: rotate(90deg); }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.6); backdrop-filter: blur(2px); z-index: 1040; }
+    .sidebar-overlay.active { display: block; }
+
+    /* main */
+    .main-content { flex-grow: 1; margin-left: 260px; display: flex; flex-direction: column; width: calc(100% - 260px); min-width: 0; height: 100vh; overflow-y: auto; background: var(--bg-color); }
+    .topbar { background: #fff; height: 64px; padding: 0 25px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 999; }
+    .content-area { padding: 20px 25px; }
+    .solid-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; overflow: hidden; }
+    .welcome-banner { background: var(--primary-gradient); border-radius: var(--radius); padding: 18px 22px; color: #fff; display: flex; justify-content: space-between; align-items: center; border: 1px solid #1e3a8a; }
+    .welcome-banner h2 { font-weight: 700; font-size: 1.45rem; margin-bottom: 2px; }
+    .welcome-banner p { margin: 0; opacity: .9; font-size: .88rem; }
+
+    /* kpi */
+    .kpi-card { padding: 16px 18px; display: flex; align-items: center; gap: 16px; border-radius: var(--radius); border: 1px solid var(--border-color); background: #fff; }
+    .kpi-icon { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #fff; flex-shrink: 0; }
+    .kpi-icon.blue { background: #1e40af; } .kpi-icon.green { background: #059669; } .kpi-icon.orange { background: #d97706; } .kpi-icon.red { background: #dc2626; }
+    .kpi-details h3 { font-size: 1.55rem; font-weight: 700; margin: 0; line-height: 1.2; }
+    .kpi-details p { margin: 0; font-size: .72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
+
+    /* notification */
+    .btn-notification { position: relative; background: #f8fafc; border: 1px solid var(--border-color); color: var(--text-main); width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+    .btn-notification:hover { background: #e2e8f0; color: var(--primary-color); }
+    .notif-badge-pill { position: absolute; top: -3px; right: -3px; font-size: .65rem; padding: 2px 6px; font-weight: 800; }
+    .po-notif-menu { width: 320px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,.12); padding: 0; overflow: hidden; }
+    .po-notif-header { background: #0f172a; color: #fff; padding: 12px 16px; font-size: .85rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+    .po-notif-item { padding: 12px 16px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: var(--text-main); }
+    .po-notif-item:hover { background: #f8fafc; }
+    .po-notif-item:last-child { border-bottom: none; }
+    .po-notif-qty { font-size: 1.15rem; font-weight: 800; }
+
+    /* filters */
+    .filter-card { background: #fff; border: 1px solid var(--border-color); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px; }
+    .filter-pills-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); }
+    .filter-pill-btn { border: 1px solid var(--border-color); background: #f8fafc; color: var(--text-muted); border-radius: 20px; font-size: .78rem; font-weight: 600; padding: 4px 14px; cursor: pointer; }
+    .filter-pill-btn.active, .filter-pill-btn:hover { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+
+    /* forms & tables */
+    .form-control, .form-select { border: 1px solid var(--border-color); border-radius: 6px; font-size: .85rem; color: var(--text-main); background: #fff; padding: 8px 12px; }
+    .btn-primary { background: var(--primary-color); border: 1px solid #1e3a8a; font-weight: 600; padding: 7px 16px; border-radius: 6px; font-size: .85rem; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .table-responsive { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; width: 100% !important; border: 1px solid var(--border-color); border-radius: 6px; background: #fff; margin-bottom: 10px; }
+    table, .table { width: 100% !important; margin-bottom: 0 !important; border-collapse: collapse !important; }
+    #mainTable, .dataTables_wrapper table.dataTable, #poReceivingTable, #poItemsTable, #auditHistoryTable, #bulkAuditTable { min-width: 840px !important; }
+    #mainTable tbody tr { cursor: pointer; }
+    .table th, #mainTable th { text-align: center !important; vertical-align: middle !important; white-space: nowrap !important; font-weight: 700 !important; color: #334155 !important; text-transform: uppercase !important; font-size: .74rem !important; letter-spacing: .5px !important; background: #f1f5f9 !important; border: 1px solid var(--border-color) !important; padding: 10px 12px !important; }
+    .table td, #mainTable td { text-align: center !important; vertical-align: middle !important; white-space: normal !important; overflow-wrap: break-word !important; border: 1px solid var(--border-color) !important; padding: 9px 10px !important; font-size: .83rem; }
+    .card-header-solid { padding: 14px 18px; border-bottom: 1px solid var(--border-color); background: #fff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .card-header-solid h5 { margin: 0; font-size: 1rem; font-weight: 700; }
+    .stacked-data-title { font-weight: 700; color: var(--primary-color); display: block; font-size: .85rem; text-align: center; }
+    .stacked-data-sub { font-size: .72rem; color: var(--text-muted); display: block; margin-top: 1px; font-weight: 500; text-align: center; }
+    .btn-export-excel { background: #059669 !important; color: #fff !important; border: none; font-weight: 600; border-radius: 6px; padding: 5px 12px; font-size: .8rem; }
+    .btn-export-print { background: #475569 !important; color: #fff !important; border: none; font-weight: 600; border-radius: 6px; padding: 5px 12px; font-size: .8rem; }
+    .form-label-custom { font-size: 12px; font-weight: 700; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+    .location-bar { display: none; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 8px 12px; font-size: 12px; margin: 4px 0 14px; align-items: center; justify-content: center; gap: 6px; }
+    .extra-section { display: none; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 6px; padding: 14px 14px 0; margin-bottom: 14px; }
+    .po-section { background: #f0fdf4; border: 1px dashed #86efac; border-radius: 6px; padding: 12px; margin-bottom: 12px; }
+    input.form-control-upper:not([type="number"]) { text-transform: uppercase; }
+
+    /* audit & route */
+    .audit-shell { max-width: 1200px; margin: 0 auto; }
+    .audit-hero { background: var(--primary-gradient); color: #fff; border-radius: 8px; padding: 18px 22px; border: 1px solid #1e3a8a; }
+    .audit-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; align-items: start; }
+    .audit-card { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: var(--shadow-sm); overflow: hidden; }
+    .audit-card-header { padding: 12px 16px; border-bottom: 1px solid var(--border-color); background: #f8fafc; display: flex; align-items: center; justify-content: space-between; }
+    .audit-card-body { padding: 16px; }
+    .audit-summary-bar { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+    .audit-summary-mini { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 10px; text-align: center; }
+    .audit-summary-mini .lbl { font-size: 9.5px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .audit-summary-mini .val { font-size: 1.1rem; font-weight: 700; margin-top: 1px; }
+    .audit-modebar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .audit-mode-btn { border: 1px solid #cbd5e1; background: #fff; color: #475569; border-radius: 6px; padding: 6px 12px; font-weight: 600; font-size: 12px; cursor: pointer; }
+    .audit-mode-btn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+    .audit-section-panel { display: none; } .audit-section-panel.active { display: block; }
+    .audit-empty { padding: 25px 10px; text-align: center; color: #94a3b8; }
+    .audit-help { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 8px 10px; font-size: 11.5px; color: #0369a1; }
+    .vendor-item { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; display: flex; align-items: center; cursor: pointer; }
+    .vendor-item:hover { border-color: #94a3b8; background: #f8fafc; }
+    .vendor-item input[type="checkbox"] { width: 18px; height: 18px; margin-right: 12px; accent-color: var(--primary-color); }
+
+    /* PO document preview wrapper */
+    .po-sheet { background: #fff; border: 1px solid var(--border-light); border-radius: 6px; overflow-x: auto; }
+
+    .mobile-nav-toggle { display: none; background: transparent; border: none; font-size: 1.25rem; color: var(--text-main); margin-right: 12px; cursor: pointer; }
+    @media (max-width: 992px) {
+      .mobile-nav-toggle { display: inline-flex; align-items: center; justify-content: center; }
+      .sidebar { transform: translateX(-100%); } .sidebar.show { transform: translateX(0); }
+      .main-content { margin-left: 0 !important; width: 100% !important; }
+      .topbar { padding: 0 15px; } .content-area { padding: 15px; }
+      .kpi-card { padding: 12px 14px; } .kpi-details h3 { font-size: 1.35rem; }
+      .audit-grid { grid-template-columns: 1fr; } .audit-summary-bar { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width: 576px) {
+      .welcome-banner { padding: 14px; } .welcome-banner h2 { font-size: 1.2rem; }
+      .kpi-icon { width: 40px; height: 40px; font-size: 1rem; }
+      .topbar h4#pageTitle { font-size: .95rem !important; }
+      .filter-card { padding: 10px; }
+      .card-header-solid { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="d-flex align-items-center gap-2">
+        <img src="https://bhtindia.com/wp-content/uploads/2025/09/BHT-Logo-e1756978341313-1536x715.jpg" alt="Logo">
+        <h4>InventoryPro</h4>
+      </div>
+      <button type="button" class="btn btn-sm text-secondary d-lg-none" onclick="toggleMobileSidebar()"><i class="fa-solid fa-xmark fs-5"></i></button>
+    </div>
+
+    <ul class="sidebar-menu" id="sideMenu">
+      <li data-menu="OVERVIEW"><a onclick="handleMenuClick('OVERVIEW', this)" class="menu-link active"><i class="fa-solid fa-layer-group main-icon"></i> Dashboard Overview</a></li>
+
+      <li data-parent="TRANSACTIONS">
+        <a onclick="toggleSubmenu(this)"><i class="fa-solid fa-list-check main-icon"></i> Stock Transactions <i class="fa-solid fa-chevron-right toggle-icon"></i></a>
+        <div class="submenu">
+          <a onclick="handleMenuClick('ALL_TRANSACTIONS', this)" class="menu-link" data-menu="ALL_TRANSACTIONS">All Stock Transactions</a>
+          <a onclick="handleMenuClick('AVAILABLE_BALANCE', this)" class="menu-link text-success fw-bold" data-menu="AVAILABLE_BALANCE">Available Stock Balance</a>
+          <a onclick="handleMenuClick('TODAY', this)" class="menu-link" data-menu="TODAY">Today Item Stock</a>
+        </div>
+      </li>
+
+      <li data-parent="MASTER">
+        <a onclick="toggleSubmenu(this)"><i class="fa-solid fa-boxes-stacked main-icon"></i> Item Master <i class="fa-solid fa-chevron-right toggle-icon"></i></a>
+        <div class="submenu">
+          <a onclick="handleMenuClick('ALL', this)" class="menu-link" data-menu="ALL">All Item Details</a>
+          <a onclick="handleMenuClick('LOW', this)" class="menu-link text-danger" data-menu="LOW">Low Stock Alerts</a>
+        </div>
+      </li>
+
+      <li data-parent="PO">
+        <a onclick="toggleSubmenu(this)"><i class="fa-solid fa-file-invoice-dollar main-icon"></i> Purchase Orders <i class="fa-solid fa-chevron-right toggle-icon"></i></a>
+        <div class="submenu">
+          <a onclick="handleMenuClick('PO_ALL', this)" class="menu-link" data-menu="PO_ALL">All POs</a>
+          <a onclick="handleMenuClick('PO_OPEN', this)" class="menu-link text-primary" data-menu="PO_OPEN">Open POs</a>
+          <a onclick="handleMenuClick('PO_CLOSED', this)" class="menu-link text-success" data-menu="PO_CLOSED">Closed POs</a>
+          <a onclick="handleMenuClick('PO_BACKORDER', this)" class="menu-link text-warning" data-menu="PO_BACKORDER">Backorders</a>
+        </div>
+      </li>
+
+      <li data-menu="VENDORS"><a onclick="handleMenuClick('VENDORS', this)" class="menu-link"><i class="fa-solid fa-address-book main-icon"></i> Vendor & Client List</a></li>
+
+      <li class="mt-3 mb-2 px-3 text-uppercase" id="actionHeaderTitle" style="font-size:.68rem;font-weight:800;letter-spacing:1.5px;color:#475569;">Actions</li>
+      <li data-menu="NEW_ENTRY"><a onclick="handleMenuClick('NEW_ENTRY', this)" class="menu-link"><i class="fa-solid fa-pen-to-square main-icon"></i> New Stock Entry</a></li>
+      <li data-menu="CREATE_PO_SIDEBAR"><a onclick="openCreatePoModal()" class="menu-link text-primary"><i class="fa-solid fa-file-circle-plus main-icon"></i> Create Purchase Order</a></li>
+      <li data-menu="STOCK_AUDIT"><a onclick="handleMenuClick('STOCK_AUDIT', this)" class="menu-link text-warning"><i class="fa-solid fa-clipboard-check main-icon"></i> Stock Audit & Adjustment</a></li>
+      <li data-menu="ROUTE_PLANNER"><a onclick="handleMenuClick('ROUTE_PLANNER', this)" class="menu-link text-info"><i class="fa-solid fa-truck-ramp-box main-icon"></i> Logistics Manifest</a></li>
+    </ul>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="d-flex align-items-center">
+        <button class="mobile-nav-toggle" onclick="toggleMobileSidebar()" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
+        <h4 class="mb-0 fw-bold" style="font-size:1.15rem;" id="pageTitle">Dashboard Overview</h4>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <div class="dropdown">
+          <button class="btn-notification" type="button" id="poNotifDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Purchase Order Notification Center">
+            <i class="fa-solid fa-bell"></i><span class="badge bg-danger rounded-pill notif-badge-pill" id="notifBadgeTotal">0</span>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end po-notif-menu" aria-labelledby="poNotifDropdownBtn">
+            <div class="po-notif-header"><span><i class="fa-solid fa-clipboard-list me-1"></i> PO Action Roster</span><span class="badge bg-primary" id="notifHeaderTotal">0 POs</span></div>
+            <a href="javascript:void(0)" onclick="handleMenuClick('PO_OPEN', document.querySelector('a[data-menu=\'PO_OPEN\']'))" class="po-notif-item">
+              <div><div class="fw-bold text-primary"><i class="fa-solid fa-folder-open me-2"></i>Pending / Open POs</div><small class="text-muted">Awaiting fulfillment</small></div>
+              <div class="po-notif-qty text-primary" id="notifOpenQty">0</div>
+            </a>
+            <a href="javascript:void(0)" onclick="handleMenuClick('PO_ALL', document.querySelector('a[data-menu=\'PO_ALL\']'))" class="po-notif-item">
+              <div><div class="fw-bold text-success"><i class="fa-solid fa-calendar-plus me-2"></i>Today Generated POs</div><small class="text-muted">Created today</small></div>
+              <div class="po-notif-qty text-success" id="notifTodayCreatedQty">0</div>
+            </a>
+            <a href="javascript:void(0)" onclick="handleMenuClick('PO_OPEN', document.querySelector('a[data-menu=\'PO_OPEN\']'))" class="po-notif-item">
+              <div><div class="fw-bold text-warning"><i class="fa-solid fa-truck-fast me-2"></i>Expected Delivery Today</div><small class="text-muted">Scheduled receipt</small></div>
+              <div class="po-notif-qty text-warning" id="notifTodayExpectedQty">0</div>
+            </a>
+          </div>
+        </div>
+        <span class="fw-bold text-muted bg-light px-3 py-1 rounded border d-none d-sm-inline-block" style="font-size:.82rem;"><i class="fa-solid fa-circle-user text-primary me-1"></i> <span id="uiUserRole">User</span></span>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- DASHBOARD / TABLE VIEW -->
+      <div id="dashboardView">
+        <div class="welcome-banner mb-3" id="welcomeBanner">
+          <div><h2>Dashboard Overview</h2><p>Real-time inventory levels, transactions, and warehouse stock balance.</p></div>
+          <div class="d-none d-md-block"><i class="fa-solid fa-warehouse fa-3x opacity-50"></i></div>
+        </div>
+
+        <div class="row g-2 mb-3" id="kpiCards">
+          <div class="col-6 col-md-3"><div class="solid-card kpi-card"><div class="kpi-icon blue"><i class="fa-solid fa-cube"></i></div><div class="kpi-details"><h3 id="kpi-stock">0</h3><p>Current Stock</p></div></div></div>
+          <div class="col-6 col-md-3"><div class="solid-card kpi-card"><div class="kpi-icon green"><i class="fa-solid fa-arrow-turn-down"></i></div><div class="kpi-details"><h3 id="kpi-in">0</h3><p>Today's Inward</p></div></div></div>
+          <div class="col-6 col-md-3"><div class="solid-card kpi-card"><div class="kpi-icon orange"><i class="fa-solid fa-arrow-turn-up"></i></div><div class="kpi-details"><h3 id="kpi-out">0</h3><p>Today's Outward</p></div></div></div>
+          <div class="col-6 col-md-3"><div class="solid-card kpi-card"><div class="kpi-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="kpi-details"><h3 id="kpi-low">0</h3><p>Low Stock</p></div></div></div>
+        </div>
+
+        <div class="filter-card" id="filterBar" style="display:none;">
+          <div class="filter-pills-bar">
+            <span class="text-muted small fw-bold me-2 align-self-center">QUICK FILTER:</span>
+            <button type="button" class="filter-pill-btn active" onclick="setQuickTypeFilter('', this)">All Moves</button>
+            <button type="button" class="filter-pill-btn" onclick="setQuickTypeFilter('IN', this)"><i class="fa-solid fa-arrow-down text-success me-1"></i> Inward Only</button>
+            <button type="button" class="filter-pill-btn" onclick="setQuickTypeFilter('OUT', this)"><i class="fa-solid fa-arrow-up text-danger me-1"></i> Outward Only</button>
+            <button type="button" class="filter-pill-btn" onclick="setQuickDateToday(this)"><i class="fa-solid fa-calendar-day me-1"></i> Today Only</button>
+          </div>
+          <div class="row g-2 align-items-center">
+            <div class="col-6 col-md-2"><input type="date" class="form-control form-control-sm" id="from" title="From Date"></div>
+            <div class="col-6 col-md-2"><input type="date" class="form-control form-control-sm" id="to" title="To Date"></div>
+            <div class="col-6 col-md-2"><select class="form-select form-select-sm fw-bold" id="typeFilter"><option value="">Move: ALL</option><option value="IN">Move: IN</option><option value="OUT">Move: OUT</option></select></div>
+            <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm" id="invoice" placeholder="Invoice / Doc No."></div>
+            <div class="col-12 col-md-4"><select class="form-select select2" id="item"><option value="">Search Item Code or Name...</option></select></div>
+            <div class="col-12 col-md-6 mt-2"><select class="form-select select2 w-100" id="vendor"><option value="">Search Vendor / Party...</option></select></div>
+            <div class="col-12 col-md-6 mt-2 d-flex justify-content-end gap-2">
+              <button class="btn btn-primary btn-sm fw-bold px-3" onclick="fetchData()"><span class="spinner-border spinner-border-sm d-none" id="filterSpinner"></span> Apply Filter</button>
+              <button class="btn btn-light btn-sm border fw-bold px-3" onclick="resetFilters()">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="analyticsReportSection" style="display:none;">
+          <div class="row g-2 mb-3">
+            <div class="col-6 col-md-3"><div class="solid-card kpi-card" style="border-left:4px solid #1e40af;"><div class="kpi-icon" style="background:#e0e7ff;color:#1e40af;"><i class="fa-solid fa-file-lines"></i></div><div class="kpi-details"><h3 id="repTotalTxn">0</h3><p>Filtered Txns</p></div></div></div>
+            <div class="col-6 col-md-3"><div class="solid-card kpi-card" style="border-left:4px solid #059669;"><div class="kpi-icon" style="background:#d1fae5;color:#059669;"><i class="fa-solid fa-arrow-down"></i></div><div class="kpi-details"><h3 id="repTotalIn">0</h3><p>Filtered Volume IN</p></div></div></div>
+            <div class="col-6 col-md-3"><div class="solid-card kpi-card" style="border-left:4px solid #dc2626;"><div class="kpi-icon" style="background:#fee2e2;color:#dc2626;"><i class="fa-solid fa-arrow-up"></i></div><div class="kpi-details"><h3 id="repTotalOut">0</h3><p>Filtered Volume OUT</p></div></div></div>
+            <div class="col-6 col-md-3"><div class="solid-card kpi-card" style="border-left:4px solid #d97706;"><div class="kpi-icon" style="background:#fef3c7;color:#d97706;"><i class="fa-solid fa-star"></i></div><div class="kpi-details"><h3 id="repTopItem" style="font-size:1rem;" class="text-truncate">-</h3><p>Top Handled Item</p></div></div></div>
+          </div>
+        </div>
+
+        <div class="solid-card" id="tableCard">
+          <div class="card-header-solid">
+            <div>
+              <h5 id="tableTitle" class="mb-0 text-truncate"><i class="fa-solid fa-table-list me-2 text-primary"></i> Data Overview</h5>
+              <small class="text-muted d-md-none"><i class="fa-solid fa-arrows-left-right me-1"></i> Swipe table horizontally</small>
+            </div>
+            <div class="d-flex gap-2 flex-shrink-0">
+              <button id="deleteSelectedBtn" class="btn btn-sm btn-danger shadow-sm rounded px-3" style="display:none;" onclick="deleteSelected()"><i class="fa-solid fa-trash-can me-1"></i> Delete Selected</button>
+              <button id="createPOBtn" class="btn btn-sm btn-dark shadow-sm rounded px-3" style="display:none;" onclick="openCreatePoModal()"><i class="fa-solid fa-file-circle-plus me-1"></i> Create PO</button>
+              <button id="addVendorBtn" class="btn btn-sm btn-primary shadow-sm rounded px-3" style="display:none;" data-bs-toggle="modal" data-bs-target="#vendorModal"><i class="fa-solid fa-plus me-1"></i> Add Vendor</button>
+            </div>
+          </div>
+          <div class="text-center py-5 d-none" id="tableLoader"><div class="spinner-border text-primary" role="status"></div><p class="text-muted mt-2 fw-bold">Synchronizing records...</p></div>
+          <div id="tableWrapper"><table id="mainTable" class="table table-bordered table-hover align-middle w-100"><thead id="tableHead"></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- STOCK ENTRY FORM -->
+      <div id="formView" style="display:none;max-width:900px;margin:0 auto;">
+        <div class="solid-card">
+          <div class="card-header-solid" style="background:#f8fafc;padding:18px 22px;">
+            <div><h4 class="fw-bold mb-1">Stock Entry / Processing</h4><p class="text-muted small mb-0 fw-medium">Record movement entries or receive items against open Purchase Orders.</p></div>
+          </div>
+          <div class="card-body p-3 p-md-4">
+            <form id="stockForm" onsubmit="event.preventDefault(); return false;">
+              <div class="extra-section row mx-0 px-0 border-0 bg-transparent mb-0" id="formExtraSection">
+                <div class="col-md-12 mb-3 po-section" id="formPoSelectBox" style="display:none;">
+                  <label class="form-label-custom text-primary"><i class="fas fa-file-invoice-dollar"></i> Link Purchase Order</label>
+                  <select id="formPoList" class="form-control select2-form"></select>
+                </div>
+              </div>
+
+              <div class="row g-2">
+                <div class="col-md-6 mb-2"><label class="form-label-custom"><i class="fas fa-exchange-alt"></i> Movement Type <span class="text-danger ms-1">*</span></label>
+                  <select id="formType" class="form-select"><option value="IN">IN (Receive)</option><option value="OUT">OUT (Issue)</option></select></div>
+                <div class="col-md-6 mb-2"><label class="form-label-custom"><i class="fas fa-tags"></i> Transaction Method <span class="text-danger ms-1">*</span></label>
+                  <select id="formMethod" class="form-select"></select></div>
+              </div>
+
+              <div id="multiItemMode" class="mt-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <label class="form-label-custom mb-0 text-primary"><i class="fas fa-boxes-stacked"></i> Items to Process <span class="text-danger ms-1">*</span></label>
+                  <button type="button" class="btn btn-sm btn-primary shadow-sm rounded px-3" onclick="addItemRow()"><i class="fas fa-plus me-1"></i> Add Item Row</button>
+                </div>
+                <div id="itemRowsContainer"></div>
+                <div class="location-bar mt-2" id="locationBadge">
+                  <i class="fas fa-warehouse text-primary"></i>
+                  <span style="color:#1e3a8a;font-weight:700;">Warehouse Storage Location:</span>
+                  <span id="locationText" style="color:#1e40af;font-weight:600;"></span>
+                </div>
+              </div>
+
+              <div id="poItemMode" style="display:none;" class="mt-3">
+                <label class="form-label-custom text-primary mb-2"><i class="fas fa-boxes-stacked"></i> PO Items Receiving Roster</label>
+                <div class="table-responsive border rounded bg-white">
+                  <table class="table table-bordered table-hover mb-0 align-middle" id="poReceivingTable">
+                    <thead><tr><th style="width:45%;">Item Code & Details</th><th style="width:15%;">Ordered</th><th style="width:15%;">Prev Recv</th><th style="width:25%;">Receiving Now <span class="text-danger">*</span></th></tr></thead>
+                    <tbody id="poReceivingBody"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="extra-section row mt-2 g-2" id="formVendorSection" style="display:none;">
+                <div class="col-md-6 mb-2" id="formVendorBox"><label class="form-label-custom"><i class="fas fa-truck"></i> Vendor/Supplier <span class="text-danger ms-1">*</span></label><select id="formVendor" class="form-control select2-form"></select></div>
+                <div class="col-md-6 mb-2" id="formInvoiceBox">
+                  <div class="d-flex justify-content-between align-items-center" style="margin-bottom:5px;">
+                    <label class="form-label-custom mb-0"><i class="fas fa-file-invoice"></i> Invoice Number <span class="text-danger ms-1">*</span></label>
+                    <label class="d-flex align-items-center gap-1 mb-0" style="font-size:11.5px;font-weight:700;color:var(--primary-color);cursor:pointer;user-select:none;">
+                      <input type="checkbox" id="withoutBillCheck" class="form-check-input mt-0" onchange="toggleWithoutBill(this)" style="cursor:pointer;"> Without Bill / Invoice
+                    </label>
+                  </div>
+                  <input type="text" id="formInvoiceNo" class="form-control form-control-upper" placeholder="e.g. INV-1020">
+                </div>
+                <div class="col-md-6 mb-2" id="formVoucherBox"><label class="form-label-custom"><i class="fas fa-receipt"></i> Voucher Number <span class="text-danger ms-1">*</span></label><input type="text" id="formVoucherNo" class="form-control form-control-upper" placeholder="e.g. VCH-001"></div>
+                <div class="col-md-6 mb-2" id="formPartyBox"><label class="form-label-custom"><i class="fas fa-users"></i> Party / Project Name <span class="text-danger ms-1">*</span></label>
+                  <input type="text" id="formPartyDetails" class="form-control form-control-upper" placeholder="Party Name (e.g. TATA PROJECTS)" oninput="sanitizePartyInput(this)">
+                  <small class="text-muted" style="font-size:11px;">(Letters, numbers & standard symbols allowed: . , & - /)</small></div>
+                <div class="col-md-6 mb-2" id="formRefBox"><label class="form-label-custom"><i class="fas fa-barcode"></i> Reference Document <span class="text-danger ms-1">*</span></label><input type="text" id="formReferenceNo" class="form-control form-control-upper" placeholder="PO or Doc No"></div>
+              </div>
+
+              <div class="row mt-2"><div class="col-md-12 mb-2"><label class="form-label-custom"><i class="fas fa-comment-dots"></i> Processing Remarks / Notes</label>
+                <input type="text" id="formRemarks" class="form-control form-control-upper" placeholder="Brief description (optional for PO receipts)..."></div></div>
+
+              <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-2">
+                <button type="button" class="btn btn-light border fw-bold px-3 rounded" onclick="resetForm()">Clear Form</button>
+                <button type="button" class="btn btn-primary fw-bold px-4 rounded shadow-sm" onclick="triggerSubmitFlow()" id="submitTxnBtn"><i class="fas fa-check-circle me-1"></i> Authorize Transaction</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- STOCK AUDIT VIEW -->
+      <div id="stockAuditView" style="display:none;max-width:1200px;margin:0 auto;">
+        <div class="audit-shell">
+          <div class="audit-hero mb-3">
+            <div class="d-flex align-items-center gap-2 mb-1"><span class="badge bg-warning text-dark px-2 py-1 rounded fw-bold">ADMIN ONLY</span><span class="small opacity-75">Controlled Inventory Reconciliation</span></div>
+            <h3 class="fw-bold mb-1 fs-5">Stock Audit & Manual Adjustment</h3>
+            <p class="mb-0 opacity-75 small">Adjust physical counts with an audit trail without tampering with primary transaction records.</p>
+          </div>
+          <div class="audit-modebar">
+            <button type="button" id="auditSingleModeBtn" class="audit-mode-btn active" onclick="setAuditMode('single')"><i class="fa-solid fa-box me-1"></i>Single Item Audit</button>
+            <button type="button" id="auditBulkModeBtn" class="audit-mode-btn" onclick="setAuditMode('bulk')"><i class="fa-solid fa-layer-group me-1"></i>Bulk Multi-Item Audit</button>
+          </div>
+
+          <div id="auditSinglePanel" class="audit-section-panel active">
+            <div class="audit-grid">
+              <div class="audit-card">
+                <div class="audit-card-header"><h6 class="mb-0 fw-bold"><i class="fa-solid fa-clipboard-check text-primary me-2"></i>Post Audit Adjustment</h6><span class="badge bg-light text-dark border">Immutable Trail</span></div>
+                <div class="audit-card-body">
+                  <div class="audit-help mb-3"><i class="fa-solid fa-shield-halved me-1"></i><b>Controlled Audit:</b> Writes a verified audit adjustment entry without deleting rows from <b>Stock_Transactions</b>.</div>
+                  <div class="row g-2">
+                    <div class="col-md-7"><label class="form-label-custom">Item / Material <span class="text-danger">*</span></label><select id="auditItem" class="form-select audit-item-search"><option value="">Search item...</option></select></div>
+                    <div class="col-md-5"><label class="form-label-custom">Audit Date <span class="text-danger">*</span></label><input type="date" id="auditDate" class="form-control form-control-sm"></div>
+                    <div class="col-12"><div class="audit-summary-bar">
+                      <div class="audit-summary-mini"><div class="lbl">System Stock</div><div class="val text-primary" id="auditSystemStock">—</div></div>
+                      <div class="audit-summary-mini"><div class="lbl">Physical Count</div><div class="val text-success" id="auditPhysicalPreview">0</div></div>
+                      <div class="audit-summary-mini"><div class="lbl">Variance</div><div class="val text-warning" id="auditVariancePreview">—</div></div>
+                      <div class="audit-summary-mini"><div class="lbl">Status</div><div class="val" style="font-size:.85rem;" id="auditState"><span class="badge bg-light text-secondary border">Waiting</span></div></div>
+                    </div></div>
+                    <div class="col-md-6"><label class="form-label-custom">Physical Count <span class="text-danger">*</span></label><input type="number" id="auditPhysicalStock" class="form-control form-control-sm" min="0" step="1" placeholder="Enter counted stock"></div>
+                    <div class="col-md-6"><label class="form-label-custom">Audit Reason <span class="text-danger">*</span></label>
+                      <select id="auditReason" class="form-select form-select-sm"><option value="">Select reason...</option><option>Physical Count Variance</option><option>Damage / Scrap Reconciliation</option><option>Location Transfer Reconciliation</option><option>Opening Stock Correction</option><option>Cycle Count Correction</option><option>Other Approved Reason</option></select></div>
+                    <div class="col-md-6"><label class="form-label-custom">Audit Reference <span class="text-danger">*</span></label><input type="text" id="auditReference" class="form-control form-control-sm form-control-upper" placeholder="e.g. AUD-2026-09-001"></div>
+                    <div class="col-md-6"><label class="form-label-custom">Remarks / Explanation</label><input type="text" id="auditRemarks" class="form-control form-control-sm" placeholder="Describe the variance"></div>
+                  </div>
+                  <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+                    <button type="button" class="btn btn-light border btn-sm rounded px-3 fw-bold" onclick="resetAuditForm()">Clear</button>
+                    <button type="button" id="auditSinglePostBtn" class="btn btn-primary btn-sm rounded px-4 fw-bold shadow-sm" onclick="previewAuditAdjustment()"><i class="fa-solid fa-shield-halved me-1"></i> Authorize & Post</button>
+                  </div>
+                </div>
+              </div>
+              <div class="audit-card">
+                <div class="audit-card-header"><h6 class="mb-0 fw-bold"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Audit History</h6><button class="btn btn-sm btn-light border rounded" onclick="loadAuditHistory()"><i class="fa-solid fa-rotate me-1"></i>Refresh</button></div>
+                <div class="audit-card-body p-0"><div class="table-responsive border-0">
+                  <table class="table table-bordered table-hover mb-0" id="auditHistoryTable">
+                    <thead><tr><th>Date</th><th>Ref</th><th>System</th><th>Physical</th><th>Adj.</th><th>By</th><th>Status</th></tr></thead>
+                    <tbody id="auditHistoryBody"><tr><td colspan="7" class="audit-empty">Select an item to view history.</td></tr></tbody>
+                  </table></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="auditBulkPanel" class="audit-section-panel">
+            <div class="audit-card mb-3">
+              <div class="audit-card-header"><h6 class="mb-0 fw-bold"><i class="fa-solid fa-layer-group text-primary me-2"></i>Bulk Audit Multi-Item Reconciliation</h6><span class="badge bg-light text-dark border">Batch Posting</span></div>
+              <div class="audit-card-body">
+                <div class="row g-2 align-items-end mb-3">
+                  <div class="col-lg-6"><label class="form-label-custom">Select Items <span class="text-danger">*</span></label><select id="bulkAuditItems" class="form-select" multiple></select></div>
+                  <div class="col-lg-3"><label class="form-label-custom">Audit Date <span class="text-danger">*</span></label><input type="date" id="bulkAuditDate" class="form-control form-control-sm"></div>
+                  <div class="col-lg-3 d-flex gap-2">
+                    <button type="button" class="btn btn-primary btn-sm flex-fill rounded fw-bold" onclick="addSelectedBulkItems()"><i class="fa-solid fa-plus me-1"></i>Add</button>
+                    <button type="button" class="btn btn-light btn-sm border rounded fw-bold px-3" onclick="clearBulkSelection()">Clear</button>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="badge bg-light text-dark border" id="bulkItemCount">0 items</span>
+                  <button type="button" class="btn btn-sm btn-outline-secondary rounded fw-bold" onclick="refreshBulkSystemStocks()"><i class="fa-solid fa-rotate me-1"></i>Refresh System Qty</button>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-bordered table-hover mb-0" id="bulkAuditTable">
+                    <thead><tr><th>Item Code</th><th>Product Name</th><th>System Qty</th><th>Physical Count</th><th>Variance</th><th>Reason</th><th>Reference</th><th>Remarks</th><th>Action</th></tr></thead>
+                    <tbody id="bulkAuditBody"><tr><td colspan="9" class="audit-empty">No items added yet. Select items above and click Add.</td></tr></tbody>
+                  </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                  <div class="small text-muted" id="bulkValidationSummary">Select items to begin batch audit.</div>
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-light border btn-sm rounded px-3 fw-bold" onclick="resetBulkAudit()">Reset Batch</button>
+                    <button type="button" id="bulkPostBtn" class="btn btn-primary btn-sm rounded px-4 fw-bold shadow-sm" onclick="previewBulkAudit()"><i class="fa-solid fa-shield-halved me-1"></i> Review & Post Batch</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROUTE MANIFEST VIEW -->
+      <div id="routePlannerView" style="display:none;max-width:1000px;margin:0 auto;">
+        <div class="solid-card">
+          <div class="card-header-solid"><h5><i class="fa-solid fa-location-crosshairs me-2 text-primary"></i> Step 1: Set Starting Location</h5></div>
+          <div class="p-3">
+            <div class="d-flex gap-2">
+              <input type="text" id="baseLoc" class="form-control" placeholder="Enter starting location (e.g., Mayapuri, Nangloi)">
+              <button class="btn btn-primary flex-shrink-0" onclick="searchVendors()"><i class="fa-solid fa-magnifying-glass me-1"></i> Locate Vendors</button>
+            </div>
+            <div id="routeLoader" class="text-primary fw-bold mt-2" style="display:none;"><i class="fa-solid fa-circle-notch fa-spin me-2"></i> Calculating vendor distances...</div>
+            <div id="routeErrorBox" class="text-danger fw-bold mt-2" style="display:none;"></div>
+          </div>
+        </div>
+        <div class="solid-card" id="resultsCard" style="display:none;">
+          <div class="card-header-solid">
+            <h5><i class="fa-solid fa-list-check me-2 text-primary"></i> Step 2: Select Vendors for Daily Manifest</h5>
+            <button class="btn btn-outline-secondary btn-sm rounded fw-bold" onclick="toggleAllRoutes(this)">Select All</button>
+          </div>
+          <div class="p-3">
+            <div id="resultsContainer" class="mb-3"></div>
+            <div class="d-flex justify-content-end gap-2 pt-2 border-top"><button class="btn btn-dark shadow-sm px-4 rounded" onclick="printManifest()"><i class="fa-solid fa-print me-2"></i> Print Logistics Route Manifest</button></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Vendor Modal -->
+<div class="modal fade" id="vendorModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title fw-bold"><i class="fa-solid fa-user-plus me-2 text-primary"></i>Add New Vendor</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body p-3 p-md-4"><form id="vendorForm">
+      <div class="mb-2"><label class="form-label text-muted small fw-bold">COMPANY NAME <span class="text-danger">*</span></label><input type="text" class="form-control" id="vName" required></div>
+      <div class="mb-2"><label class="form-label text-muted small fw-bold">CONTACT PERSON <span class="text-danger">*</span></label><input type="text" class="form-control" id="vPersonName" required></div>
+      <div class="mb-2"><label class="form-label text-muted small fw-bold">ADDRESS <span class="text-danger">*</span></label><input type="text" class="form-control" id="vAddress" required></div>
+      <div class="row">
+        <div class="col-md-6 mb-2"><label class="form-label text-muted small fw-bold">EMAIL</label><input type="email" class="form-control" id="vEmail"></div>
+        <div class="col-md-6 mb-2"><label class="form-label text-muted small fw-bold">PHONE <span class="text-danger">*</span></label><input type="text" class="form-control" id="vPhone" required></div>
+      </div></form></div>
+    <div class="modal-footer"><button type="button" class="btn btn-light border rounded px-3" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary rounded px-4" onclick="submitVendor()" id="saveVendorBtn">Save Vendor</button></div>
+  </div></div>
+</div>
+
+<!-- Create PO Modal -->
+<div class="modal fade" id="poModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header bg-dark text-white py-3"><h5 class="modal-title fw-bold"><i class="fa-solid fa-file-invoice-dollar me-2"></i>Draft Purchase Order</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body p-3 p-md-4 bg-light"><form id="poCreationForm">
+      <div class="row g-2 mb-3">
+        <div class="col-md-6"><div class="bg-white p-3 border rounded shadow-sm h-100"><label class="form-label fw-bold text-muted small mb-1">SELECT VENDOR <span class="text-danger">*</span></label><select class="form-select" id="poVendorModal" style="width:100%;"><option value="">Select Vendor...</option></select></div></div>
+        <div class="col-md-6"><div class="bg-white p-3 border rounded shadow-sm h-100"><label class="form-label fw-bold text-muted small mb-1">EXPECTED DELIVERY DATE <span class="text-danger">*</span></label><input type="date" class="form-control" id="poDeliveryDate" required></div></div>
+      </div>
+      <div class="bg-white p-3 border rounded shadow-sm mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2"><h6 class="fw-bold mb-0">Order Items List</h6><button type="button" class="btn btn-sm btn-outline-primary rounded px-3 fw-bold" onclick="addPoItemRow()"><i class="fa-solid fa-plus me-1"></i> Add Line Item</button></div>
+        <div class="table-responsive"><table class="table table-bordered mb-0" id="poItemsTable">
+          <thead><tr><th style="width:45%;">Item / Product / Model</th><th style="width:15%;">Quantity</th><th style="width:15%;">Rate (₹)</th><th style="width:15%;">Total Amount</th><th style="width:10%;">Action</th></tr></thead>
+          <tbody id="poItemsBody"></tbody>
+          <tfoot><tr><td colspan="3" class="text-end fw-bold">GRAND TOTAL:</td><td colspan="2" class="text-primary fw-bold">₹ <span id="poGrandTotal">0.00</span></td></tr></tfoot>
+        </table></div>
+      </div>
+      <div class="row g-2">
+        <div class="col-md-6"><div class="bg-white p-3 border rounded shadow-sm h-100"><label class="form-label fw-bold text-muted small mb-1">PAYMENT TERMS</label><input type="text" class="form-control" id="poPaymentTerms" placeholder="e.g. Net 30 Days"></div></div>
+        <div class="col-md-6"><div class="bg-white p-3 border rounded shadow-sm"><label class="form-label fw-bold text-muted small mb-1">REMARKS / REFERENCE</label><input type="text" class="form-control" id="poGlobalRemarks" placeholder="Internal notes or project instructions"></div></div>
+      </div></form></div>
+    <div class="modal-footer bg-white"><button type="button" class="btn btn-light border rounded px-3 fw-bold" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary rounded px-4 fw-bold shadow-sm" onclick="previewPO()"><i class="fa-solid fa-eye me-1"></i> Preview & Verify PO</button></div>
+  </div></div>
+</div>
+
+<!-- PO Preview (draft) -->
+<div class="modal fade" id="poPreviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header bg-dark text-white py-3"><h5 class="modal-title fw-bold"><i class="fa-solid fa-file-pdf me-2 text-danger"></i> Purchase Order Preview</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body p-3 bg-light"><div id="poPreviewContent" class="po-sheet"></div></div>
+    <div class="modal-footer bg-white border-top">
+      <button type="button" class="btn btn-outline-secondary rounded px-3 fw-bold" onclick="backToEditPO()"><i class="fa-solid fa-arrow-left me-1"></i> Back to Edit</button>
+      <button type="button" class="btn btn-success rounded px-4 fw-bold shadow-sm" onclick="executePoCreation()" id="confirmGeneratePoBtn"><i class="fa-solid fa-check-circle me-1"></i> Save & Generate PO</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- PO Detail (click a PO row) -->
+<div class="modal fade" id="poDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header bg-dark text-white py-3"><h5 class="modal-title fw-bold" id="poDetailTitle"><i class="fa-solid fa-file-invoice me-2"></i>PO Details</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body bg-light"><div id="poDetailBody" class="po-sheet"></div></div>
+    <div class="modal-footer bg-white">
+      <button type="button" class="btn btn-dark rounded px-3 fw-bold" onclick="printPoDetail()"><i class="fa-solid fa-print me-1"></i> Print / Save PDF</button>
+      <button type="button" class="btn btn-light border rounded px-3 fw-bold" data-bs-dismiss="modal">Close</button>
+    </div>
+  </div></div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+
+<script>
+/* =====================  GENERAL HELPERS  ===================== */
+const gs = () => google.script.run;
+const LOGO_URL = 'https://bhtindia.com/wp-content/uploads/2025/09/BHT-Logo-e1756978341313-1536x715.jpg';
+const METHODS = { IN: ["Purchase","Manufacture","Return"], OUT: ["Sales","Damaged","Return"] };
+
+function toggleSubmenu(el) {
+  if (!el) return;
+  el.classList.toggle('active-parent');
+  const sm = el.nextElementSibling;
+  if (sm && sm.classList.contains('submenu')) sm.classList.toggle('open');
+}
+function closeMobileSidebar() {
+  document.getElementById('sidebar').classList.remove('show');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+}
+function toggleMobileSidebar() {
+  document.getElementById('sidebar').classList.toggle('show');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+function sanitizePartyInput(i) { if (i) i.value = i.value.replace(/[^A-Za-z0-9\s.,&'\-/]/g, '').toUpperCase(); }
+function toggleWithoutBill(cb) {
+  const inp = document.getElementById('formInvoiceNo');
+  if (cb.checked) { inp.value = 'WITHOUT BILL/INVOICE'; inp.readOnly = true; inp.classList.add('bg-light','fw-bold','text-secondary'); }
+  else { if (inp.value === 'WITHOUT BILL/INVOICE') inp.value = ''; inp.readOnly = false; inp.classList.remove('bg-light','fw-bold','text-secondary'); }
+}
+const escapeHtml_ = v => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const nz = v => (v === undefined || v === null || String(v).trim() === '') ? '-' : v;
+const e_ = escapeHtml_;
+
+function extractValue(row, keys) {
+  if (!row || typeof row !== 'object') return '-';
+  for (const k of keys) if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') return row[k];
+  const rk = Object.keys(row), clean = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+  for (const k of keys) { const t = clean(k); for (const r of rk) if (clean(r) === t && row[r] !== undefined && row[r] !== null && String(row[r]).trim() !== '') return row[r]; }
+  return '-';
+}
+function parseNumeric(v) {
+  if (v === undefined || v === null || v === '-' || v === '') return 0;
+  return Number(String(v).replace(/[^0-9.-]+/g, '')) || 0;
+}
+function getTodayYMD() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function parseAnyDate(val) {
+  if (!val || val === '-' || val === 'N/A') return null;
+  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+  if (typeof val === 'number') { const d = new Date(val); return isNaN(d.getTime()) ? null : d; }
+  const s = String(val).trim();
+  if (!s) return null;
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) {            // fast path: server ISO format
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/);
+    return new Date(+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0));
+  }
+  const m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+  if (m) {
+    let a = +m[1], b = +m[2], day, mon;
+    if (a > 12) { day = a; mon = b - 1; } else if (b > 12) { mon = a - 1; day = b; } else if (s.includes('/')) { mon = a - 1; day = b; } else { day = a; mon = b - 1; }
+    return new Date(+m[3], mon, day, +(m[4]||0), +(m[5]||0), +(m[6]||0));
+  }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+function formatTableDate(val) {
+  const d = parseAnyDate(val);
+  if (!d) return (val && val !== '-') ? String(val) : '-';
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
+}
+function fmtDMY(val) {
+  const d = parseAnyDate(val);
+  return d ? `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}` : '-';
+}
+function safeInitSelect2(selector, placeholder, parentModal) {
+  try {
+    $(selector).each(function () {
+      const $t = $(this);
+      if ($t.data('select2')) $t.select2('destroy');
+      const o = { theme: 'bootstrap-5', width: '100%', placeholder: placeholder || 'Select option...', allowClear: true };
+      if (parentModal) o.dropdownParent = $(parentModal);
+      $t.select2(o);
+    });
+  } catch (err) { console.warn('Select2 init bypassed:', err); }
+}
+function printHtml_(title, body) {
+  const w = window.open('', '_blank');
+  if (!w) { Swal.fire({ icon: 'info', title: 'Popup Blocked', text: 'Please allow popups to print.' }); return; }
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${e_(title)}</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><style>@page{size:A4;margin:10mm}body{margin:0;font-family:Inter,Arial,sans-serif}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head><body>${body}<script>setTimeout(function(){window.print();},800)<\/script></body></html>`);
+  w.document.close();
+}
+
+/* =====================  ROLES / PERMISSIONS  ===================== */
+let CURRENT_USER_ROLE = "ADMIN";
+try {
+  const injected = "<?= userRole ?>";
+  if (injected && injected.indexOf("<" + "%") === -1 && injected !== "undefined" && injected.trim() !== "") CURRENT_USER_ROLE = injected.trim().toUpperCase();
+} catch (err) {}
+
+const ROLE_PERMISSIONS = {
+  ADMIN: { menus: ['OVERVIEW','ALL_TRANSACTIONS','AVAILABLE_BALANCE','TODAY','ALL','LOW','PO_ALL','PO_OPEN','PO_CLOSED','PO_BACKORDER','VENDORS','NEW_ENTRY','STOCK_AUDIT','ROUTE_PLANNER'], actions: ['CREATE_PO','ADD_VENDOR','DELETE_TXN','NEW_ENTRY','AUDIT_ADJUSTMENT'] },
+  STORE: { menus: ['OVERVIEW','ALL_TRANSACTIONS','AVAILABLE_BALANCE','TODAY','ALL','LOW','VENDORS','NEW_ENTRY','PO_ALL','PO_OPEN','PO_CLOSED','PO_BACKORDER','ROUTE_PLANNER'], actions: ['NEW_ENTRY','CREATE_PO'] },
+  PRODUCTION: { menus: ['ALL_TRANSACTIONS','AVAILABLE_BALANCE','TODAY'], actions: [] },
+  PC: { menus: ['OVERVIEW','ALL_TRANSACTIONS','AVAILABLE_BALANCE','TODAY','ALL','LOW','PO_ALL','PO_OPEN','PO_CLOSED','PO_BACKORDER'], actions: ['CREATE_PO'] }
+};
+let userPerms = ROLE_PERMISSIONS[CURRENT_USER_ROLE] || ROLE_PERMISSIONS.ADMIN;
+
+function enforceUIPermissions() {
+  userPerms = ROLE_PERMISSIONS[CURRENT_USER_ROLE] || ROLE_PERMISSIONS.ADMIN;
+  document.getElementById('uiUserRole').innerText = CURRENT_USER_ROLE + " Profile";
+  document.querySelectorAll('#sideMenu li[data-menu]').forEach(li => {
+    const k = li.getAttribute('data-menu');
+    if (k === 'CREATE_PO_SIDEBAR') li.style.display = userPerms.actions.includes('CREATE_PO') ? '' : 'none';
+    else if (!userPerms.menus.includes(k)) li.style.display = 'none';
+  });
+  document.querySelectorAll('#sideMenu li[data-parent]').forEach(li => {
+    let vis = 0;
+    li.querySelectorAll('.submenu a[data-menu]').forEach(a => { if (!userPerms.menus.includes(a.getAttribute('data-menu'))) a.style.display = 'none'; else vis++; });
+    if (!vis) li.style.display = 'none';
+  });
+  if (!userPerms.actions.includes('NEW_ENTRY') && !userPerms.actions.includes('CREATE_PO')) document.getElementById('actionHeaderTitle').style.display = 'none';
+}
+
+/* =====================  STATE & CACHE  ===================== */
+let dataTableInstance = null, currentMode = '';
+let itemMap = {}, vendorMap = {}, openPOs = [];
+let poRowCount = 0, activeDataReqId = 0, isSubmittingTxn = false;
+let rawPOData = [], groupedPOData = {}, uniquePOs = {}, poPayloadDraft = null, currentPoHtml = '';
+let globalItemOptions = '<option value="">Search item...</option>';
+let globalVendorOptions = '<option value="">Search vendor...</option>';
+
+const dataCache = {};
+const CACHE_MS = 120000;
+let lastOverview = null;
+function invalidateCache() { Object.keys(dataCache).forEach(k => delete dataCache[k]); lastOverview = null; }
+
+function loadTable(key, fnName) {
+  const reqId = ++activeDataReqId;
+  const paint = data => {
+    if (reqId !== activeDataReqId) return;
+    setLoading(false);
+    if (!dataTableInstance) return;
+    dataTableInstance.clear();
+    if (data && data.length) dataTableInstance.rows.add(data);
+    dataTableInstance.draw();
+  };
+  const c = dataCache[key];
+  if (c && Date.now() - c.t < CACHE_MS) { paint(c.data); return; }
+  setLoading(true);
+  gs().withSuccessHandler(d => { dataCache[key] = { t: Date.now(), data: d }; paint(d); })
+      .withFailureHandler(err => { if (reqId === activeDataReqId) handleError(err); })[fnName]();
+}
+const fetchVendorList = () => loadTable('ven', 'getVendorListData');
+const fetchItemMaster = () => loadTable('items', 'getItemMasterData');
+const fetchAvailableBalance = () => loadTable('bal', 'getAvailableBalanceData');
+const fetchTodaySummary = () => loadTable('today', 'getTodaySummaryData');
+
+/* =====================  BOOTSTRAP  ===================== */
+function applyMaster(data) {
+  if (data.items) {
+    let opts = '<option value="">Search item...</option>', filt = '<option value="">Search Item Code or Name...</option>';
+    itemMap = {};
+    data.items.forEach(i => {
+      const t = e_(`${i.code} | ${i.name}${i.category ? ' | ' + i.category : ''}`);
+      opts += `<option value="${e_(i.code)}">${t}</option>`;
+      filt += `<option value="${e_(i.code)}">${t}</option>`;
+      itemMap[i.code] = i;
+    });
+    globalItemOptions = opts;
+    $('#item').html(filt);
+    safeInitSelect2('#item', 'Search Item Code or Name...');
+    initStockItemSelects();
+  }
+  if (data.vendors) {
+    let opts = '<option value="">Search vendor...</option>', filt = '<option value="">Search Vendor / Party...</option>';
+    data.vendors.forEach(x => {
+      opts += `<option value="${e_(x.code)}">${e_(x.name)} (${e_(x.code)})</option>`;
+      filt += `<option value="${e_(x.name)}">${e_(x.name)}</option>`;
+      vendorMap[x.code] = x;
+    });
+    globalVendorOptions = opts;
+    $('#formVendor').html(opts);
+    $('#vendor').html(filt);
+    safeInitSelect2('#vendor', 'Search Vendor / Party...');
+    safeInitSelect2('#formVendor', 'Select...');
+  }
+}
+function applyDynamic(d) {
+  if (!d) return;
+  if (d.userRole && d.userRole !== CURRENT_USER_ROLE) { CURRENT_USER_ROLE = d.userRole; enforceUIPermissions(); }
+  if (d.openPOs) { openPOs = d.openPOs; renderOpenPOsDropdown(); }
+  if (d.notifCounts) updateNotifBadges(d.notifCounts);
+  if (d.kpi) lastOverview = { t: Date.now(), payload: { kpi: d.kpi, table: d.recentTransactions || [] } };
+}
+function refreshDynamic() { gs().withSuccessHandler(applyDynamic).getDynamicData(); }
+
+function updateNotifBadges(c) {
+  const open = Number(c.openPOs) || 0;
+  document.getElementById('notifOpenQty').innerText = open;
+  document.getElementById('notifTodayCreatedQty').innerText = Number(c.todayCreated) || 0;
+  document.getElementById('notifTodayExpectedQty').innerText = Number(c.todayExpected) || 0;
+  document.getElementById('notifBadgeTotal').innerText = open;
+  document.getElementById('notifHeaderTotal').innerText = `${open} Open PO${open === 1 ? '' : 's'}`;
+}
+
+function renderOpenPOsDropdown() {
+  let html = '<option value="">-- No PO (Direct Purchase) --</option>';
+  uniquePOs = {};
+  openPOs.forEach(p => { (uniquePOs[p.poNumber] = uniquePOs[p.poNumber] || { vendor: p.vendor, items: [] }).items.push(p); });
+  Object.keys(uniquePOs).forEach(n => {
+    const v = vendorMap[uniquePOs[n].vendor];
+    html += `<option value="${e_(n)}">${e_(n)} | Ven: ${e_(v && v.name ? v.name : uniquePOs[n].vendor)}</option>`;
+  });
+  $('#formPoList').html(html);
+  safeInitSelect2('#formPoList', 'Select PO...');
+}
+
+/* =====================  STARTUP  ===================== */
+$(function () {
+  enforceUIPermissions();
+  $(document).on('select2:open', () => { const f = document.querySelector('.select2-container--open .select2-search__field'); if (f) f.focus(); });
+
+  $.fn.dataTable.ext.search.push(function (settings, data, idx) {
+    if (settings.nTable.id !== 'mainTable') return true;
+    const t = $('#typeFilter').val();
+    if (!t || !dataTableInstance) return true;
+    const r = dataTableInstance.row(idx).data();
+    return !r || String(r.type || '').toUpperCase() === t;
+  });
+  $('#typeFilter').on('change', function () {
+    if (!dataTableInstance) return;
+    dataTableInstance.draw();
+    if (currentMode === 'ALL_TRANSACTIONS') generateAdvancedReport(dataTableInstance.rows({ search: 'applied' }).data().toArray());
+  });
+
+  const defaultRoute = (CURRENT_USER_ROLE === 'ADMIN' || CURRENT_USER_ROLE === 'PC') ? 'OVERVIEW' : 'AVAILABLE_BALANCE';
+  const initialLink = document.querySelector(`a[data-menu="${defaultRoute}"]`) || document.querySelector('.sidebar-menu a:first-child');
+  initTable('TRANSACTIONS');
+  setLoading(true);
+  gs().withSuccessHandler(d => {
+        if (d.userRole && d.userRole !== CURRENT_USER_ROLE) { CURRENT_USER_ROLE = d.userRole; enforceUIPermissions(); }
+        applyMaster(d); applyDynamic(d);
+        handleMenuClick(defaultRoute, initialLink);
+      })
+      .withFailureHandler(err => { console.error('Bootstrap error:', err); handleMenuClick(defaultRoute, initialLink); })
+      .getAppBootstrapData();
+
+  $('#formType').on('change', updateFormMethod);
+  $('#formMethod').on('change', toggleFormExtra);
+  updateFormMethod();
+  resetItemRows();
+
+  $('input.form-control-upper').on('input', function () {
+    const s = this.selectionStart, e = this.selectionEnd;
+    this.value = this.value.toUpperCase();
+    this.setSelectionRange(s, e);
+  });
+  $('#poModal').on('shown.bs.modal', function () {
+    const keepVendor = $('#poVendorModal').val();
+    $('#poVendorModal').html(globalVendorOptions);
+    if (keepVendor) $('#poVendorModal').val(keepVendor);
+    safeInitSelect2('#poVendorModal', 'Select Vendor...', '#poModal');
+    if (poRowCount === 0) { $('#poItemsBody').empty(); addPoItemRow(); }
+  });
+  $(document).on('click', '#mainTable tbody tr', function (e) {
+    if (!currentMode.startsWith('PO_') || $(e.target).closest('button, a, input').length) return;
+    const row = dataTableInstance && dataTableInstance.row(this).data();
+    if (row && row.poNumber) viewPoDetails(row.poNumber);
+  });
+});
+
+/* =====================  NAVIGATION  ===================== */
+function handleMenuClick(type, element) {
+  if (!userPerms.menus.includes(type)) return;
+  document.querySelectorAll('.sidebar-menu .menu-link').forEach(l => l.classList.remove('active'));
+  if (element) element.classList.add('active');
+  if (window.innerWidth < 992) closeMobileSidebar();
+
+  currentMode = type;
+  const title = document.getElementById('tableTitle'), pageTitle = document.getElementById('pageTitle');
+  const setT = (page, icon, text) => { pageTitle.innerText = page; title.innerHTML = `<i class="${icon} me-2"></i> ${text}`; };
+
+  $('#addVendorBtn, #deleteSelectedBtn, #createPOBtn').hide();
+  $('#analyticsReportSection, #kpiCards, #welcomeBanner, #filterBar').hide();
+  $('#dashboardView, #formView, #routePlannerView, #stockAuditView').hide();
+
+  if (type === 'NEW_ENTRY') { pageTitle.innerText = "Stock Entry Management"; $('#formView').fadeIn(150); initStockItemSelects(); return; }
+  if (type === 'STOCK_AUDIT') { pageTitle.innerText = "Stock Audit & Manual Adjustment"; $('#stockAuditView').fadeIn(150); initializeAuditView(); return; }
+  if (type === 'ROUTE_PLANNER') { pageTitle.innerText = "Logistics Route Manifest Planner"; $('#routePlannerView').fadeIn(150); return; }
+
+  $('#dashboardView').show();
+
+  if (type === 'OVERVIEW') {
+    setT("Dashboard Overview", "fa-solid fa-clock-rotate-left text-primary", "Recent Stock Transactions");
+    $('#kpiCards, #welcomeBanner').show();
+    initTable('TRANSACTIONS');
+    if (lastOverview && Date.now() - lastOverview.t < CACHE_MS) renderDashboard(lastOverview.payload);
+    else fetchData();
+  } else if (type === 'ALL_TRANSACTIONS') {
+    setT("All Stock Transactions", "fa-solid fa-list-ul text-primary", "Complete Transaction History");
+    $('#filterBar').show();
+    if (userPerms.actions.includes('DELETE_TXN')) $('#deleteSelectedBtn').show();
+    resetFilters(true);
+    initTable('TRANSACTIONS');
+    fetchData();
+  } else if (type === 'AVAILABLE_BALANCE') {
+    setT("Available Inventory Balance", "fa-solid fa-scale-balanced text-success", "Current Stock Balances");
+    initTable('AVAILABLE_BALANCE'); fetchAvailableBalance();
+  } else if (type === 'ALL') {
+    setT("All Item Details (Item Master)", "fa-solid fa-boxes-stacked text-primary", "Master Catalog");
+    initTable('ITEM_MASTER'); fetchItemMaster();
+  } else if (type === 'TODAY') {
+    setT("Today Item Stock (Daily Summary)", "fa-solid fa-calendar-day text-primary", "Daily Stock Summary");
+    initTable('DAILY_SUMMARY'); fetchTodaySummary();
+  } else if (type.startsWith('PO_')) {
+    const names = { PO_ALL: 'All Purchase Orders', PO_OPEN: 'Open / Pending POs', PO_CLOSED: 'Closed / Fulfilled POs', PO_BACKORDER: 'Backorders' };
+    setT(names[type], "fa-solid fa-file-invoice-dollar text-primary", names[type]);
+    if (userPerms.actions.includes('CREATE_PO')) $('#createPOBtn').show();
+    initTable('PO_MAIN');
+    fetchAndGroupPOData(type);
+  } else if (type === 'LOW') {
+    setT("Low Stock Alerts", "fa-solid fa-triangle-exclamation text-danger", "Low Stock Items");
+    initTable('STOCK'); fetchDrillDown('LOW');
+  } else if (type === 'VENDORS') {
+    setT("Vendor & Client Directory", "fa-solid fa-address-book text-primary", "Registered Vendors");
+    if (userPerms.actions.includes('ADD_VENDOR')) $('#addVendorBtn').show();
+    initTable('VENDORS'); fetchVendorList();
+  }
+}
+
+function setQuickTypeFilter(type, btn) {
+  document.querySelectorAll('.filter-pills-bar .filter-pill-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  $('#typeFilter').val(type).trigger('change');
+}
+function setQuickDateToday(btn) {
+  document.querySelectorAll('.filter-pills-bar .filter-pill-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  $('#from, #to').val(getTodayYMD());
+  fetchData();
+}
+function resetFilters(preventFetch) {
+  $('#from, #to, #invoice, #typeFilter').val('');
+  $('#item, #vendor').val('').trigger('change.select2');
+  $('.filter-pills-bar .filter-pill-btn').removeClass('active').first().addClass('active');
+  if (preventFetch !== true) fetchData();
+}
+
+/* =====================  DATA FETCH & RENDER  ===================== */
+function fetchData() {
+  setLoading(true);
+  const reqId = ++activeDataReqId;
+  const fail = err => { if (reqId === activeDataReqId) handleError(err); };
+  if (currentMode === 'OVERVIEW') {
+    gs().withSuccessHandler(d => {
+      if (reqId !== activeDataReqId) return;
+      applyDynamic(d);
+      renderDashboard({ kpi: d.kpi, table: d.recentTransactions });
+    }).withFailureHandler(fail).getDynamicData();
+    return;
+  }
+  const f = { from: $('#from').val(), to: $('#to').val(), item: $('#item').val(), vendor: $('#vendor').val(), invoice: $('#invoice').val() };
+  gs().withSuccessHandler(d => { if (reqId === activeDataReqId) renderDashboard(d); })
+      .withFailureHandler(fail).getDashboardDataFiltered(f);
+}
+
+function fetchDrillDown(type) {
+  setLoading(true);
+  const reqId = ++activeDataReqId;
+  gs().withSuccessHandler(data => {
+    if (reqId !== activeDataReqId) return;
+    setLoading(false);
+    if (!dataTableInstance) return;
+    dataTableInstance.clear();
+    if (data && data.length) dataTableInstance.rows.add(data);
+    dataTableInstance.draw();
+  }).withFailureHandler(err => { if (reqId === activeDataReqId) handleError(err); }).getDrillDownData(type);
+}
+
+function renderDashboard(data) {
+  setLoading(false);
+  if (!data) return;
+  try {
+    if (data.kpi) {
+      animateValue("kpi-stock", data.kpi.currentStockQty || 0);
+      document.getElementById("kpi-low").innerText = data.kpi.lowStockCount || 0;
+      animateValue("kpi-in", data.kpi.todayIn || 0);
+      animateValue("kpi-out", data.kpi.todayOut || 0);
+    }
+    if ((currentMode === 'OVERVIEW' || currentMode === 'ALL_TRANSACTIONS') && dataTableInstance) {
+      dataTableInstance.clear();
+      if (data.table && data.table.length) dataTableInstance.rows.add(data.table);
+      dataTableInstance.draw();
+      if (currentMode === 'ALL_TRANSACTIONS') generateAdvancedReport(dataTableInstance.rows({ search: 'applied' }).data().toArray());
+      else $('#analyticsReportSection').hide();
+    }
+  } catch (err) { console.error('Dashboard render error:', err); }
+}
+
+function generateAdvancedReport(rows) {
+  if (!rows || !rows.length || currentMode !== 'ALL_TRANSACTIONS') { $('#analyticsReportSection').hide(); return; }
+  $('#analyticsReportSection').show();
+  const tf = ($('#typeFilter').val() || '').toUpperCase();
+  let tIn = 0, tOut = 0, n = 0; const usage = {};
+  rows.forEach(r => {
+    const type = String(r.type || '').toUpperCase();
+    if (tf && type !== tf) return;
+    const q = Number(r.qty) || 0, label = r.name ? `[${r.item}] - ${r.name}` : r.item;
+    n++; usage[label] = (usage[label] || 0) + q;
+    if (type === 'IN') tIn += q; else if (type === 'OUT') tOut += q;
+  });
+  $('#repTotalTxn').text(n);
+  animateValue("repTotalIn", tIn); animateValue("repTotalOut", tOut);
+  const top = Object.keys(usage).sort((a, b) => usage[b] - usage[a])[0];
+  $('#repTopItem').text(top || '-');
+}
+
+function handleError(e) { setLoading(false); Swal.fire({ icon: 'error', title: 'Error fetching data', text: (e && e.message) || String(e) }); }
+function setLoading(on) {
+  $('#filterSpinner').toggleClass('d-none', !on);
+  $('#tableLoader').toggleClass('d-none', !on);
+  $('#tableWrapper').toggleClass('d-none', on);
+}
+function animateValue(id, end) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  end = Number(end) || 0;
+  const start = Number(el.innerText) || 0, t0 = performance.now(), dur = 300;
+  const step = t => { const p = Math.min((t - t0) / dur, 1); el.innerText = Math.floor(start + (end - start) * p); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+/* =====================  TABLES  ===================== */
+function initTable(mode) {
+  if ($.fn.DataTable.isDataTable('#mainTable')) { $('#mainTable').DataTable().destroy(); $('#mainTable').empty(); }
+  let columns = [], head = '<tr>', order = [];
+  const X = extractValue;
+  const dateCol = (keys) => (d, t, r) => { const raw = X(r, keys), dt = parseAnyDate(raw); if (t === 'sort' || t === 'type') return dt ? dt.getTime() : 0; return `<span class="text-muted">${formatTableDate(raw)}</span>`; };
+  const statusBadge = r => { const s = String(X(r, ['Status','STATUS'])).trim().toUpperCase(); return `<span class="badge ${(s==='ACTIVE'||s==='YES'||s==='TRUE')?'bg-success':'bg-danger'}">${s||'-'}</span>`; };
+  const stockKeys = { op: ['Opening Stock','OpeningStock','opening stock'], in: ['Total Stock In','TotalStockIn','total stock in','In'], out: ['Total Stock Out','TotalStockOut','total stock out','Out'], cl: ['Closing Stock','ClosingStock','closing stock'] };
+
+  if (mode === 'ITEM_MASTER') {
+    head += '<th>Item Details</th><th>Category</th><th>Location</th><th>Key Code</th><th>Status</th></tr>';
+    columns = [
+      { data: null, render: (d, t, r) => `<span class="stacked-data-title">${X(r,['Item Code','ItemCode'])}</span><span class="stacked-data-sub">${X(r,['PRODUCT NAME','ProductName','Product Name'])}</span>` },
+      { data: null, render: (d, t, r) => `<span class="fw-bold">${X(r,['CATEGORY','Category'])}</span><span class="stacked-data-sub">${X(r,['SUB CATEGORY','Sub Category','SubCategory'])}</span>` },
+      { data: null, render: (d, t, r) => `Line: <b>${X(r,['Line_number','Line Number','Line'])}</b> | Rack: <b>${X(r,['Rack_number','Rack Number','Rack'])}</b> | Box: <b>${X(r,['Box-number','Box Number','Box'])}</b>` },
+      { data: null, render: (d, t, r) => `<span class="text-muted font-monospace">${X(r,['Product Code Key','ProductCodeKey'])}</span>` },
+      { data: null, render: (d, t, r) => statusBadge(r) }
+    ];
+    order = [[0, 'asc']];
+  } else if (mode === 'AVAILABLE_BALANCE') {
+    head += '<th>Item Details</th><th>Opening</th><th>Total In</th><th>Total Out</th><th>Stock Adj.</th><th>Closing</th><th>Last Updated</th></tr>';
+    const nums = r => ({ op: parseNumeric(X(r, stockKeys.op)), tin: parseNumeric(X(r, stockKeys.in)), tout: parseNumeric(X(r, stockKeys.out)), cl: parseNumeric(X(r, stockKeys.cl)) });
+    columns = [
+      { data: null, render: (d, t, r) => `<span class="stacked-data-title">${X(r,['Item Code','ItemCode'])}</span><span class="stacked-data-sub">${X(r,['Product Name','ProductName','PRODUCT NAME'])}</span>` },
+      { data: null, render: (d, t, r) => X(r, stockKeys.op) },
+      { data: null, render: (d, t, r) => `<span class="text-success fw-bold">${X(r, stockKeys.in)}</span>` },
+      { data: null, render: (d, t, r) => `<span class="text-danger fw-bold">${X(r, stockKeys.out)}</span>` },
+      { data: null, render: (d, t, r) => {
+          const n = nums(r), adj = n.cl - (n.op + n.tin - n.tout);
+          if (t === 'sort' || t === 'type') return adj;
+          if (adj > 0) return `<span class="badge bg-success" title="Audit Surplus: +${adj}" style="cursor:help;">+${adj}</span>`;
+          if (adj < 0) return `<span class="badge bg-warning text-dark" title="Audit Variance/Deficit: ${adj}" style="cursor:help;">${adj}</span>`;
+          return '<span class="text-muted">0</span>';
+      } },
+      { data: null, render: (d, t, r) => {
+          const n = nums(r), adj = n.cl - (n.op + n.tin - n.tout), low = n.cl < 10;
+          const f = `Opening (${n.op}) + In (${n.tin}) - Out (${n.tout}) ${adj ? (adj > 0 ? '+ Adj (' + adj + ')' : '- Adj (' + Math.abs(adj) + ')') : ''} = ${n.cl}`;
+          return `<span class="fw-bold ${low ? 'text-danger' : 'text-dark'}" title="${f}" style="cursor:help;">${n.cl} ${low ? '<i class="fa-solid fa-triangle-exclamation ms-1"></i>' : ''}</span>`;
+      } },
+      { data: null, render: dateCol(['Last Updated','LastUpdated','last updated']) }
+    ];
+    order = [[6, 'desc']];
+  } else if (mode === 'DAILY_SUMMARY') {
+    head += '<th>Date</th><th>Item Details</th><th>Opening</th><th>In</th><th>Out</th><th>Closing</th></tr>';
+    columns = [
+      { data: null, render: dateCol(['Mapped_Date','Date','date']) },
+      { data: null, render: (d, t, r) => `<span class="stacked-data-title">${X(r,['Mapped_Code','Item Code','code'])}</span><span class="stacked-data-sub">${X(r,['Mapped_Name','Product Name','name'])}</span>` },
+      { data: null, render: (d, t, r) => X(r, ['Mapped_Opening','Opening Stock','Opening','opening']) },
+      { data: null, render: (d, t, r) => `<span class="text-success fw-bold">${X(r,['Mapped_In','In Stock','In','in'])}</span>` },
+      { data: null, render: (d, t, r) => `<span class="text-danger fw-bold">${X(r,['Mapped_Out','Out Stock','Out','out'])}</span>` },
+      { data: null, render: (d, t, r) => {
+          const net = parseNumeric(X(r, ['Mapped_In','In Stock','In','in'])) - parseNumeric(X(r, ['Mapped_Out','Out Stock','Out','out']));
+          return `<span class="fw-bold text-dark" title="Today Net Movement: ${net >= 0 ? '+' : ''}${net}">${X(r, ['Mapped_Closing','Closing Stock','Closing','net'])}</span>`;
+      } }
+    ];
+    order = [[0, 'desc']];
+  } else if (mode === 'STOCK') {
+    head += '<th>Item Details</th><th>Opening Stock</th><th>Closing Stock</th><th>Last Update</th></tr>';
+    columns = [
+      { data: null, render: (d, t, r) => `<span class="stacked-data-title">${X(r,['Item Code','code','item'])}</span>` },
+      { data: null, render: (d, t, r) => X(r, ['Opening Stock','opening']) },
+      { data: null, render: (d, t, r) => { const c = X(r, ['Closing Stock','closing']), low = r.isLow || c <= 10; return `<span class="fw-bold ${low ? 'text-danger' : 'text-dark'}">${c} ${low ? '<i class="fa-solid fa-triangle-exclamation ms-1"></i>' : ''}</span>`; } },
+      { data: null, render: dateCol(['Last Update','date','Date']) }
+    ];
+    order = [[3, 'desc']];
+  } else if (mode === 'VENDORS') {
+    head += '<th>Company Details</th><th>Contact Person</th><th>Contact Info</th><th>Address</th><th>Status</th></tr>';
+    columns = [
+      { data: null, render: (d, t, r) => `<span class="stacked-data-title">${X(r,['Company Name','Vendor Name','VendorName','Name'])}</span><span class="stacked-data-sub">Code: ${X(r,['Vendor Code','VendorCode','Code'])}</span>` },
+      { data: null, render: (d, t, r) => `<span class="fw-bold text-dark">${X(r,['Person Name','PersonName','Contact Person','Person'])}</span>` },
+      { data: null, render: (d, t, r) => `<div>${X(r,['Phone Number','PhoneNumber','Phone'])}</div><span class="stacked-data-sub">${X(r,['Vendor Email','VendorEmail','Email'])}</span>` },
+      { data: null, render: (d, t, r) => `<span class="text-secondary small">${X(r,['Vendor Address','VendorAddress','Address'])}</span>` },
+      { data: null, render: (d, t, r) => statusBadge(r) }
+    ];
+    order = [[0, 'asc']];
+  } else if (mode === 'PO_MAIN') {
+    head += '<th>PO Info</th><th>Vendor</th><th>Items</th><th>Ordered</th><th>Received</th><th>Created By</th><th>Status</th><th>Action</th></tr>';
+    columns = [
+      { data: null, render: (d, t, r) => { const dt = parseAnyDate(r.date); if (t === 'sort' || t === 'type') return dt ? dt.getTime() : 0; return `<span class="stacked-data-title">${e_(r.poNumber)}</span><span class="stacked-data-sub">Issued: ${formatTableDate(r.date)}</span>`; } },
+      { data: 'vendor', render: v => `<span class="fw-bold text-dark">${e_(vendorMap[v] ? vendorMap[v].name : v)}</span><span class="stacked-data-sub">ID: ${e_(v)}</span>` },
+      { data: 'items', render: v => `<span class="badge bg-light text-dark border">${v.length} Item(s)</span>` },
+      { data: 'totalOrdered', render: v => `<span class="fw-bold">${v}</span>` },
+      { data: 'totalReceived', render: v => `<span class="text-success fw-bold">${v}</span>` },
+      { data: 'createdBy', render: v => `<span class="text-secondary small fw-bold">${e_(v || '-')}</span>` },
+      { data: 'overallStatus', render: v => `<span class="badge ${v==='OPEN'?'bg-primary':v==='PARTIAL'?'bg-warning text-dark':v==='FULFILLED'?'bg-success':'bg-secondary'} px-2 py-1">${v}</span>` },
+      { data: null, orderable: false, searchable: false, render: (d, t, r) => {
+          const n = e_(r.poNumber).replace(/&#39;/g, "\\'");
+          let b = `<div class="d-flex justify-content-center align-items-center gap-1"><button class="btn btn-sm btn-outline-primary py-1 px-2 fw-bold" onclick="viewPoDetails('${n}')"><i class="fa-solid fa-eye me-1"></i> View</button>`;
+          if (CURRENT_USER_ROLE === 'ADMIN') b += `<button class="btn btn-sm btn-outline-danger py-1 px-2 fw-bold" onclick="triggerDeletePO('${n}')"><i class="fa-solid fa-trash"></i></button>`;
+          return b + '</div>';
+      } }
+    ];
+    order = [[0, 'desc']];
+  } else if (mode === 'TRANSACTIONS') {
+    const del = userPerms.actions.includes('DELETE_TXN');
+    if (del) head += '<th style="width:35px;"><input type="checkbox" id="selectAllCheckbox" onclick="toggleAllCheckboxes(this)"></th>';
+    head += '<th>Date</th><th>Item Code</th><th>Item Name</th><th>Movement</th><th>Vendor & Doc</th><th>User & Party</th><th>Remarks</th></tr>';
+    if (del) columns.push({ data: null, orderable: false, searchable: false, render: (d, t, r) => r.rowIdx ? `<input type="checkbox" class="row-checkbox" value="${r.rowIdx}">` : '' });
+    columns.push(
+      { data: null, render: (d, t, r) => { const dt = parseAnyDate(r.date); if (t === 'sort' || t === 'type') return dt ? dt.getTime() : (Number(r.rowIdx) || 0); return `<span class="text-muted">${formatTableDate(r.date)}</span>`; } },
+      { data: null, render: (d, t, r) => `<span class="fw-bold text-primary">${e_(nz(r.item))}</span>` },
+      { data: null, render: (d, t, r) => `<span class="text-dark fw-medium">${e_(nz(r.name))}</span>` },
+      { data: null, render: (d, t, r) => { const ty = String(r.type || '').toUpperCase(); return `<span class="badge ${ty==='IN'?'bg-success':ty==='OUT'?'bg-danger':'bg-secondary'} px-2 py-1">${ty} : ${nz(r.qty)}</span><span class="stacked-data-sub">${e_(nz(r.method))}</span>`; } },
+      { data: null, render: (d, t, r) => {
+          const rv = nz(r.vendor), vs = rv !== '-' ? (vendorMap[rv] ? vendorMap[rv].name : rv) : 'Internal';
+          let doc = nz(r.invoice); if (doc === '-') doc = nz(r.voucher); if (doc === '-') doc = nz(r.reference);
+          return `<span class="fw-bold text-dark">${e_(vs)}</span><span class="stacked-data-sub">Doc: ${e_(doc)}</span>`;
+      } },
+      { data: null, render: (d, t, r) => { const p = nz(r.party); return `<span class="text-secondary small fw-bold">${e_(nz(r.user))}</span><span class="stacked-data-sub">${p !== '-' ? 'Party: ' + e_(p) : ''}</span>`; } },
+      { data: null, render: (d, t, r) => e_(nz(r.remarks)) }
+    );
+    order = [[del ? 1 : 0, 'desc']];
+  }
+
+  $('#mainTable').html(`<thead>${head}</thead><tbody></tbody>`);
+  try {
+    dataTableInstance = $('#mainTable').DataTable({
+      columns: columns, pageLength: 50, lengthMenu: [[50, 100, -1], [50, 100, "All"]],
+      order: order, responsive: false, autoWidth: false, destroy: true, deferRender: true,
+      language: { search: "", searchPlaceholder: "Search table records..." },
+      dom: "<'row mb-2 px-3 pt-2 align-items-center'<'col-sm-12 col-md-4'l><'col-sm-12 col-md-4 text-center'B><'col-sm-12 col-md-4'f>><'table-responsive'tr><'row mt-2 px-3 pb-2'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+      buttons: [
+        { extend: 'excelHtml5', text: '<i class="fa-solid fa-file-excel me-1"></i> Excel', className: 'btn btn-export-excel me-1' },
+        { extend: 'print', text: '<i class="fa-solid fa-print me-1"></i> Print Table', className: 'btn btn-export-print' }
+      ]
+    });
+  } catch (err) { console.warn('DataTable init error:', err); }
+}
+
+function toggleAllCheckboxes(src) { if (dataTableInstance) dataTableInstance.$('.row-checkbox').prop('checked', src.checked); }
+
+function deleteSelected() {
+  const sel = [];
+  if (dataTableInstance) dataTableInstance.$('.row-checkbox:checked').each(function () { sel.push(parseInt($(this).val())); });
+  if (!sel.length) { Swal.fire({ icon: 'info', title: 'Selection Required', text: 'Please select at least one transaction row to delete.' }); return; }
+  Swal.fire({
+    title: 'Delete Selected Transaction(s)?',
+    html: `You have selected <b>${sel.length}</b> transaction(s).<br><br><span class="text-danger fw-bold"><i class="fa-solid fa-triangle-exclamation me-1"></i> Automatic Sync:</span> Deleting these transactions will update stock levels and reverse/update linked Purchase Order records.`,
+    icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#94a3b8',
+    confirmButtonText: 'Yes, Delete & Sync POs', cancelButtonText: 'Cancel'
+  }).then(res => {
+    if (!res.isConfirmed) return;
+    const btn = $('#deleteSelectedBtn'), orig = btn.html();
+    btn.html('<span class="spinner-border spinner-border-sm me-1"></span> Deleting...').prop('disabled', true);
+    setLoading(true);
+    gs().withSuccessHandler(msg => {
+      invalidateCache();
+      btn.html(orig).prop('disabled', false);
+      Swal.fire({ icon: 'success', title: 'Transactions Deleted', text: msg, confirmButtonColor: '#1e40af' });
+      fetchData(); refreshDynamic();
+    }).withFailureHandler(err => {
+      btn.html(orig).prop('disabled', false); setLoading(false);
+      Swal.fire('Delete Failed', err.message, 'error');
+    }).deleteMultipleTransactions(sel);
+  });
+}
+
+window.triggerDeletePO = function (poNumber) {
+  Swal.fire({
+    title: 'Delete Purchase Order?',
+    html: `Are you sure you want to completely delete <b>${e_(poNumber)}</b>?<br><br>All related PO records and corresponding received stock transactions will be removed.`,
+    icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#94a3b8',
+    confirmButtonText: '<i class="fa-solid fa-trash me-1"></i> Yes, Delete PO'
+  }).then(res => {
+    if (!res.isConfirmed) return;
+    setLoading(true);
+    gs().withSuccessHandler(msg => {
+      invalidateCache();
+      Swal.fire('Deleted!', msg, 'success');
+      fetchAndGroupPOData(currentMode, true); refreshDynamic();
+    }).withFailureHandler(err => { setLoading(false); Swal.fire('Error', err.message, 'error'); }).deletePurchaseOrder(poNumber);
+  });
+};
+
+/* =====================  PURCHASE ORDERS  ===================== */
+function loadPOs(force, cb) {
+  const c = dataCache.po;
+  if (!force && c && Date.now() - c.t < CACHE_MS) { rawPOData = c.data; groupPOs(); cb(); return; }
+  gs().withSuccessHandler(d => { rawPOData = d || []; dataCache.po = { t: Date.now(), data: rawPOData }; groupPOs(); cb(); })
+      .withFailureHandler(handleError).getPOListData();
+}
+
+function groupPOs() {
+  groupedPOData = {};
+  rawPOData.forEach(row => {
+    const n = row.poNumber;
+    if (!n) return;
+    const g = groupedPOData[n] || (groupedPOData[n] = {
+      poNumber: n, date: row.date, vendor: row.vendor, createdBy: row.createdBy, items: [],
+      isBackorder: /-BO$/.test(n), totalOrdered: 0, totalReceived: 0, statusSet: new Set(),
+      remarks: row.remarks, terms: row.terms, deliveryDate: row.deliveryDate
+    });
+    g.items.push(row);
+    g.totalOrdered += Number(row.orderedQty) || 0;
+    g.totalReceived += Number(row.receivedQty) || 0;
+    g.statusSet.add(String(row.status).toUpperCase());
+    if (row.deliveryDate) g.deliveryDate = row.deliveryDate;
+  });
+  Object.values(groupedPOData).forEach(po => {
+    let s = 'OPEN';
+    if (po.statusSet.has('OPEN') || po.statusSet.has('PARTIAL')) s = po.totalReceived > 0 ? 'PARTIAL' : 'OPEN';
+    else if (po.statusSet.has('CLOSED-SHORT') || po.statusSet.has('CLOSED')) s = 'CLOSED';
+    else if (po.statusSet.has('FULFILLED')) s = 'FULFILLED';
+    po.overallStatus = s;
+  });
+}
+
+function renderPOTable(mode) {
+  let arr = Object.values(groupedPOData);
+  if (mode === 'PO_OPEN') arr = arr.filter(p => p.overallStatus === 'OPEN' || p.overallStatus === 'PARTIAL');
+  if (mode === 'PO_CLOSED') arr = arr.filter(p => p.overallStatus === 'CLOSED' || p.overallStatus === 'FULFILLED');
+  if (mode === 'PO_BACKORDER') arr = arr.filter(p => p.isBackorder);
+  if (dataTableInstance && currentMode.startsWith('PO_')) {
+    dataTableInstance.clear();
+    if (arr.length) dataTableInstance.rows.add(arr);
+    dataTableInstance.draw();
+  }
+}
+
+function fetchAndGroupPOData(mode, force) {
+  const reqId = ++activeDataReqId;
+  setLoading(true);
+  loadPOs(force, () => { if (reqId !== activeDataReqId) return; renderPOTable(mode); setLoading(false); });
+}
+
+/* ---- PO document (matches the official BHT Purchase Order format) ---- */
+function poFromGroup(po) {
+  const v = vendorMap[po.vendor] || {};
+  return {
+    poNumber: po.poNumber, date: po.date,
+    vendorName: v.name || po.vendor, vendorAddress: v.address || '', vendorPhone: v.phone || '', vendorEmail: v.email || '',
+    deliveryDate: po.deliveryDate, terms: po.terms, remarks: po.remarks,
+    items: po.items.map(r => {
+      const qty = Number(r.orderedQty) || 0, rate = Number(r.rate) || 0;
+      return { code: r.itemCode, name: (itemMap[r.itemCode] && itemMap[r.itemCode].name) || r.itemCode, qty: qty, unit: 'Nos', rate: rate, amount: qty * rate };
+    })
+  };
+}
+
+function buildPoHtml(po) {
+  const th = 'padding:12px 10px;border:1px solid #cbd5e1;background:#f1f5f9;font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;text-align:center;';
+  const td = 'padding:14px 10px;border:1px solid #cbd5e1;text-align:center;font-size:13px;';
+  const lbl = 'font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;margin-bottom:12px;';
+  const box = 'flex:1;padding:18px 20px;';
+  let grand = 0;
+  const rows = po.items.map((it, i) => {
+    grand += it.amount;
+    return `<tr><td style="${td}">${i + 1}</td>
+      <td style="${td}text-align:left;font-weight:700;">${e_(it.code)}<br>${e_(it.name)}</td>
+      <td style="${td}">${it.qty} ${e_(it.unit)}</td>
+      <td style="${td}">₹ ${it.rate.toFixed(2)}</td>
+      <td style="${td}font-weight:700;">₹ ${it.amount.toFixed(2)}</td></tr>`;
+  }).join('');
+
+  return `<div style="font-family:Inter,Arial,sans-serif;color:#1e293b;background:#fff;padding:30px 34px;min-width:720px;max-width:820px;margin:0 auto;font-size:13px;line-height:1.55;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1e293b;padding-bottom:20px;margin-bottom:24px;">
+      <img src="${LOGO_URL}" alt="BHT" style="height:64px;object-fit:contain;">
+      <div style="text-align:right;">
+        <div style="font-size:32px;font-weight:800;color:#4f46e5;letter-spacing:.5px;line-height:1.1;">PURCHASE ORDER</div>
+        <div style="font-size:16px;font-weight:700;margin-top:8px;">PO No: ${e_(po.poNumber)}</div>
+        <div style="color:#64748b;margin-top:2px;">Date: ${fmtDMY(po.date)}</div>
+      </div>
+    </div>
+
+    <div style="display:flex;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;margin-bottom:24px;">
+      <div style="${box}border-right:1px solid #e2e8f0;">
+        <div style="${lbl}">To Vendor</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">${e_(po.vendorName)}</div>
+        <div>${e_(po.vendorAddress)}</div>
+        <div style="margin-top:10px;"><i style="color:#64748b;">Phone:</i> ${e_(po.vendorPhone || 'N/A')}</div>
+        <div><i style="color:#64748b;">Email:</i> ${e_(po.vendorEmail || 'N/A')}</div>
+      </div>
+      <div style="${box}">
+        <div style="${lbl}">Ship To / Billing</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Bhagirath Heavy Transmission</div>
+        <div style="color:#475569;">(Material Handling Equipment Division)</div>
+        <div>Plot no. 29, Street no. 4, Sector 7A, Model Economic Township, Reliance Met, Vill - Yakubpur, Distt - Jhajjar, Haryana - 124103. Gstin 06ALDPM4631K1Z3,<br>India</div>
+        <div style="margin-top:10px;"><i style="color:#64748b;">Mobile:</i> +91-9871010000</div>
+        <div><i style="color:#64748b;">Req. Delivery Date:</i> <b style="color:#4f46e5;">${po.deliveryDate ? formatTableDate(po.deliveryDate) : '-'}</b></div>
+      </div>
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+      <thead><tr>
+        <th style="${th}width:60px;">S.No</th><th style="${th}text-align:left;">Item Code & Full Description</th>
+        <th style="${th}width:80px;">Qty</th><th style="${th}width:110px;">Unit Rate</th><th style="${th}width:140px;">Total Amount</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr>
+        <td colspan="3" style="border:none;"></td>
+        <td style="${th}font-size:13px;">Grand<br>Total:</td>
+        <td style="${td}font-size:19px;font-weight:800;">₹ ${grand.toFixed(2)}</td>
+      </tr></tfoot>
+    </table>
+
+    <div style="display:flex;border:1px dashed #cbd5e1;border-radius:8px;background:#fcfcfd;margin-bottom:40px;">
+      <div style="${box}border-right:1px dashed #cbd5e1;">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;margin-bottom:10px;">Standard Terms & Conditions</div>
+        <ol style="margin:0;padding-left:18px;color:#475569;font-size:12.5px;">
+          <li><b>Price:</b> Rates are strictly as per the agreed schedule.</li>
+          <li><b>Delivery:</b> Triplicate copies of Delivery Challan &amp; Invoice must accompany the shipment.</li>
+          <li><b>Quality:</b> Materials subject to strict inspection at our works. Defective goods will be rejected at supplier's cost.</li>
+          <li><b>Jurisdiction:</b> Subject to local jurisdiction.</li>
+        </ol>
+      </div>
+      <div style="${box}">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Agreed Payment Terms & Notes</div>
+        <div style="font-weight:600;color:#475569;font-size:12.5px;margin-bottom:14px;">${e_(po.terms || 'As per standard company contract terms.')}</div>
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Additional Conditions / Ref</div>
+        <div style="color:#64748b;font-size:12.5px;">${e_(po.remarks && po.remarks !== '-' ? po.remarks : 'Please confirm receipt of this PO immediately.')}</div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;">
+      <div style="width:300px;text-align:center;"><div style="border-top:1.5px solid #1e293b;padding-top:8px;font-weight:700;">Authorized Signatory</div></div>
+    </div>
+    <div style="text-align:center;color:#94a3b8;font-size:11px;margin-top:26px;">This is a system generated Purchase Order. For Bhagirath Heavy Transmission</div>
+  </div>`;
+}
+
+window.viewPoDetails = function (poNum) {
+  const show = () => {
+    const po = groupedPOData[poNum];
+    if (!po) { Swal.fire({ icon: 'info', title: 'Not found', text: 'This PO could not be loaded.' }); return; }
+    currentPoHtml = buildPoHtml(poFromGroup(po));
+    $('#poDetailTitle').html(`<i class="fa-solid fa-file-invoice me-2"></i>${e_(poNum)} <span class="badge bg-light text-dark ms-2">${e_(po.overallStatus)}</span>`);
+    $('#poDetailBody').html(currentPoHtml);
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('poDetailModal')).show();
+  };
+  if (groupedPOData[poNum]) show(); else loadPOs(true, show);
+};
+function printPoDetail() { printHtml_('Purchase Order', currentPoHtml); }
+
+/* ---- PO creation ---- */
+function openCreatePoModal() {
+  if (!userPerms.actions.includes('CREATE_PO')) { Swal.fire({ icon: 'error', title: 'Access Denied', text: 'You do not have permission to create purchase orders.' }); return; }
+  if (window.innerWidth < 992) closeMobileSidebar();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('poModal')).show();
+}
+
+function addPoItemRow() {
+  const n = ++poRowCount, id = `poRow_${n}`;
+  $('#poItemsBody').append(`<tr id="${id}">
+    <td><select class="form-select po-item-select" id="poItemSelect_${n}">${globalItemOptions}</select></td>
+    <td><input type="number" class="form-control text-center po-calc po-qty" min="1" value="1"></td>
+    <td><input type="number" class="form-control text-center po-calc po-rate" min="0" value="0.00" step="0.01"></td>
+    <td><input type="text" class="form-control text-center po-total bg-light fw-bold" value="0.00" readonly></td>
+    <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger" onclick="$('#${id}').remove(); calculatePoGrandTotal();"><i class="fa-solid fa-trash"></i></button></td></tr>`);
+  safeInitSelect2(`#poItemSelect_${n}`, 'Search line item...', '#poModal');
+}
+$(document).on('input', '.po-calc', function () {
+  const row = $(this).closest('tr');
+  row.find('.po-total').val((parseNumeric(row.find('.po-qty').val()) * parseNumeric(row.find('.po-rate').val())).toFixed(2));
+  calculatePoGrandTotal();
+});
+function calculatePoGrandTotal() {
+  let g = 0;
+  $('.po-total').each(function () { g += parseNumeric($(this).val()); });
+  $('#poGrandTotal').text(g.toFixed(2));
+}
+
+function previewPO() {
+  const vendor = $('#poVendorModal').val(), deliveryDate = $('#poDeliveryDate').val();
+  if (!vendor) { Swal.fire({ icon: 'warning', title: 'Vendor Required', text: 'Please select a vendor for this purchase order.', confirmButtonColor: '#1e40af' }); return; }
+  if (!deliveryDate) { Swal.fire({ icon: 'warning', title: 'Delivery Date Required', text: 'Please choose an expected delivery date.', confirmButtonColor: '#1e40af' }); return; }
+  const items = []; let bad = false;
+  $('#poItemsBody tr').each(function () {
+    const code = ($(this).find('.po-item-select').val() || '').trim();
+    const qty = parseNumeric($(this).find('.po-qty').val()), rate = parseNumeric($(this).find('.po-rate').val());
+    if (!code || qty <= 0) bad = true;
+    items.push({ itemCode: code, itemName: (itemMap[code] && itemMap[code].name) || code, qty: qty, rate: rate, amount: qty * rate });
+  });
+  if (bad || !items.length) { Swal.fire({ icon: 'warning', title: 'Invalid Line Items', text: 'Ensure all line items are selected with valid quantities.', confirmButtonColor: '#1e40af' }); return; }
+
+  const remarks = $('#poGlobalRemarks').val() || '', terms = $('#poPaymentTerms').val() || '';
+  poPayloadDraft = { vendor: vendor, deliveryDate: deliveryDate, remarks: remarks, terms: terms, items: items };
+  const v = vendorMap[vendor] || {};
+  $('#poPreviewContent').html(buildPoHtml({
+    poNumber: 'DRAFT', date: getTodayYMD(), vendorName: v.name || vendor, vendorAddress: v.address || '', vendorPhone: v.phone || '', vendorEmail: v.email || '',
+    deliveryDate: deliveryDate, terms: terms, remarks: remarks,
+    items: items.map(i => ({ code: i.itemCode, name: i.itemName, qty: i.qty, unit: 'Nos', rate: i.rate, amount: i.amount }))
+  }));
+  swapModal('poModal', 'poPreviewModal');
+}
+function backToEditPO() { swapModal('poPreviewModal', 'poModal'); }
+function swapModal(fromId, toId) {
+  const from = document.getElementById(fromId);
+  $(from).one('hidden.bs.modal', () => bootstrap.Modal.getOrCreateInstance(document.getElementById(toId)).show());
+  bootstrap.Modal.getOrCreateInstance(from).hide();
+}
+
+function executePoCreation() {
+  if (!poPayloadDraft) return;
+  const btn = $('#confirmGeneratePoBtn'), label = '<i class="fa-solid fa-check-circle me-1"></i> Save & Generate PO';
+  btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Saving PO...').prop('disabled', true);
+  gs().withSuccessHandler(poNumber => {
+    invalidateCache();
+    btn.html(label).prop('disabled', false);
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('poPreviewModal')).hide();
+    document.getElementById('poCreationForm').reset();
+    poRowCount = 0; $('#poItemsBody').empty(); $('#poGrandTotal').text('0.00');
+    refreshDynamic();
+    if (currentMode.startsWith('PO_')) fetchAndGroupPOData(currentMode, true);
+    Swal.fire({
+      icon: 'success', title: 'PO Created Successfully',
+      html: `<b>Purchase Order: ${e_(poNumber)}</b> has been generated.<br><br>Click below to view the PO:`,
+      showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b',
+      confirmButtonText: '<i class="fa-solid fa-eye me-1"></i> View PO', cancelButtonText: 'Done'
+    }).then(r => { if (r.isConfirmed) loadPOs(true, () => viewPoDetails(poNumber)); });
+  }).withFailureHandler(err => {
+    btn.html(label).prop('disabled', false);
+    Swal.fire({ icon: 'error', title: 'Failed to Save PO', text: err.message, confirmButtonColor: '#dc2626' });
+  }).createPurchaseOrder(poPayloadDraft);
+}
+
+/* =====================  VENDORS  ===================== */
+function submitVendor() {
+  const g = id => document.getElementById(id).value.trim();
+  const name = g('vName'), personName = g('vPersonName'), address = g('vAddress'), phone = g('vPhone');
+  if (!name || !personName || !address || !phone) { Swal.fire({ icon: 'warning', title: 'Missing Fields', text: 'Fill all required fields.' }); return; }
+  const btn = $('#saveVendorBtn').prop('disabled', true);
+  gs().withSuccessHandler(() => {
+    btn.prop('disabled', false);
+    invalidateCache();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('vendorModal')).hide();
+    document.getElementById('vendorForm').reset();
+    fetchVendorList();
+    gs().withSuccessHandler(d => applyMaster(d)).getAppBootstrapData();
+  }).withFailureHandler(err => { btn.prop('disabled', false); Swal.fire('Error', err.message, 'error'); })
+    .addVendorData({ name: name, personName: personName, address: address, email: g('vEmail'), phone: phone });
+}
+
+/* =====================  STOCK ENTRY FORM  ===================== */
+function initStockItemSelects() {
+  $('#itemRowsContainer .item-select').each(function () {
+    const $t = $(this), cur = $t.val();
+    $t.html(globalItemOptions);
+    if (cur) $t.val(cur);
+    safeInitSelect2($t, 'Search Item Code or Name...');
+  });
+}
+function itemRowHtml(removable) {
+  return `<div class="row g-2 align-items-center mb-2 item-entry-row">
+    <div class="col-md-7"><select class="form-control select2-dynamic item-select">${globalItemOptions}</select></div>
+    <div class="col-md-4 col-9"><input type="number" class="form-control item-qty" min="1" placeholder="Enter Qty"></div>
+    <div class="col-md-1 col-3 text-center"><button type="button" class="btn btn-outline-danger btn-sm rounded" ${removable ? `onclick="this.closest('.item-entry-row').remove()"` : 'disabled'}><i class="fas fa-trash"></i></button></div></div>`;
+}
+function resetItemRows() { $('#itemRowsContainer').html(itemRowHtml(false)); initStockItemSelects(); }
+function addItemRow() {
+  const $r = $(itemRowHtml(true)).appendTo('#itemRowsContainer');
+  safeInitSelect2($r.find('.item-select'), 'Search Item Code or Name...');
+}
+
+$(document).on('change', '.item-select', function () {
+  const code = $(this).val(), $b = $('#locationBadge');
+  if (!code) { $b.hide(); return; }
+  const i = itemMap[code] || {};
+  $('#locationText').text(`Line: ${i.line || '-'} | Rack: ${i.rack || '-'} | Box: ${i.box || '-'}`);
+  $b.css('display', 'flex');
+});
+
+$('#formPoList').on('change', function () {
+  const po = $(this).val();
+  if (!po) {
+    $('#poItemMode').hide();
+    $('#multiItemMode').fadeIn(150, initStockItemSelects);
+    $('#formVendor').prop('disabled', false).val('').trigger('change.select2');
+    return;
+  }
+  const g = uniquePOs[po];
+  if (!g) return;
+  $('#formVendor').val(g.vendor).trigger('change.select2').prop('disabled', true);
+  $('#poReceivingBody').html(g.items.map(l => {
+    const name = (itemMap[l.itemCode] && itemMap[l.itemCode].name) || l.itemCode;
+    const ord = Number(l.orderedQty) || 0, prev = Number(l.receivedQty) || 0, rem = Math.max(0, ord - prev);
+    return `<tr><td><strong class="text-primary">${e_(l.itemCode)}</strong><br><span style="font-size:12px;color:#475569;">${e_(name)}</span></td>
+      <td class="fw-bold">${ord}</td><td class="fw-bold text-secondary">${prev}</td>
+      <td><input type="number" class="form-control form-control-sm text-center fw-bold po-recv-qty border-primary mx-auto" data-item="${e_(l.itemCode)}" data-ordered="${ord}" data-prev="${prev}" data-rowidx="${l.rowIdx}" min="0" max="${rem}" value="${rem}" style="max-width:90px;"></td></tr>`;
+  }).join(''));
+  $('#multiItemMode').hide();
+  $('#poItemMode').fadeIn();
+});
+
+function updateFormMethod() {
+  $('#formMethod').html(METHODS[$('#formType').val()].map(m => `<option value="${m}">${m}</option>`).join(''));
+  toggleFormExtra();
+}
+function toggleFormExtra() {
+  const t = $('#formType').val(), m = $('#formMethod').val();
+  $('#formVendorSection, #formPoSelectBox, #formVendorBox, #formInvoiceBox, #formVoucherBox, #formPartyBox, #formRefBox').hide();
+  if (t === "IN" && m === "Purchase") $('#formPoSelectBox, #formVendorSection, #formVendorBox, #formInvoiceBox, #formExtraSection').show();
+  else if ($('#formPoList').val()) $('#formPoList').val('').trigger('change');
+  if (t === "IN" && m === "Manufacture") $('#formVoucherBox, #formVendorSection, #formExtraSection').show();
+  if (t === "IN" && m === "Return") $('#formRefBox, #formVendorSection, #formExtraSection').show();
+  if (t === "OUT" && m === "Sales") $('#formInvoiceBox, #formPartyBox, #formVendorSection, #formExtraSection').show();
+  if (t === "OUT" && m === "Damaged") $('#formRefBox, #formVendorSection, #formExtraSection').show();
+  if (!(t === "IN" && m === "Purchase") && !(t === "OUT" && m === "Sales")) {
+    $('#withoutBillCheck').prop('checked', false);
+    $('#formInvoiceNo').val('').prop('readonly', false).removeClass('bg-light fw-bold text-secondary');
+  }
+}
+
+function setSubmitBusy(busy) {
+  isSubmittingTxn = busy;
+  $('#submitTxnBtn').prop('disabled', busy).html(busy ? '<span class="spinner-border spinner-border-sm me-1"></span> Processing...' : '<i class="fas fa-check-circle me-1"></i> Authorize Transaction');
+}
+
+function triggerSubmitFlow() {
+  if (isSubmittingTxn) return;
+  const selectedPO = $('#formPoList').val(), t = $('#formType').val(), m = $('#formMethod').val();
+  const items = [];
+  let shortfall = 0, totalQty = 0;
+  const err = (title, text) => Swal.fire({ icon: 'error', title: title, text: text, confirmButtonColor: '#1e40af' });
+
+  if ((t === "IN" && m === "Purchase") || (t === "OUT" && m === "Sales")) {
+    if (!($('#formInvoiceNo').val() || '').trim()) return err('Invoice Required', 'Please enter an Invoice Number or select "Without Bill / Invoice".');
+  }
+  if (t === "OUT" && m === "Sales") {
+    const p = ($('#formPartyDetails').val() || '').trim();
+    if (!p) return err('Missing Party / Project', 'Party/Project Name is required.');
+    if (!/^[A-Za-z0-9\s.,&'\-/]+$/.test(p)) return err('Invalid Party / Project Name', 'Please enter a valid company/project name.');
+  }
+
+  if (selectedPO) {
+    let hasExceeded = false;
+    $('.po-recv-qty').each(function () {
+      const code = String($(this).attr('data-item'));
+      const ord = parseNumeric($(this).data('ordered'));
+      const prev = parseNumeric($(this).data('prev'));
+      const rowIdx = Number($(this).data('rowidx'));
+      const q = parseNumeric($(this).val());
+      const rem = Math.max(0, ord - prev);
+
+      if (q > rem) {
+        hasExceeded = true;
+        return false;
+      }
+      if (rem - q > 0) shortfall += (rem - q);
+      if (q > 0) totalQty += q;
+
+      // Include all items (even qty = 0) so the server can track and close the PO line
+      items.push({
+        itemCode: code,
+        qty: q,
+        poRowIdx: rowIdx,
+        orderedQty: ord,
+        prevReceived: prev,
+        remaining: Math.max(0, rem - q)
+      });
+    });
+
+    if (hasExceeded) {
+      return err('Quantity Exceeded', 'Receiving quantity cannot exceed the remaining quantity on the PO.');
+    }
+    if (totalQty <= 0) {
+      return err('No Items Received', 'At least one item must have a received quantity greater than 0.');
+    }
+  } else {
+    // Non-PO Multi-Item Entry: check for duplicate items
+    const seen = {};
+    let hasDup = false, dupCode = '';
+    $('.item-entry-row').each(function () {
+      const code = $(this).find('.item-select').val(), q = parseNumeric($(this).find('.item-qty').val());
+      if (code && q > 0) {
+        if (seen[code]) {
+          hasDup = true;
+          dupCode = code;
+          return false;
+        }
+        seen[code] = true;
+        items.push({ itemCode: code, qty: q });
+        totalQty += q;
+      }
+    });
+    if (hasDup) {
+      return err('Duplicate Item Detected', `Item ${dupCode} is selected more than once. Please combine the quantities into one row.`);
+    }
+    if (!items.length) {
+      return err('No Quantities Entered', 'Please select an item and enter quantity for at least one item.');
+    }
+  }
+
+  if (!($('#formRemarks').val() || '').trim()) {
+    if (selectedPO) $('#formRemarks').val(`Received against PO: ${selectedPO}`);
+    else return err('Remarks Required', 'Please enter processing remarks.');
+  }
+
+  setSubmitBusy(true);
+  const release = () => setSubmitBusy(false);
+
+  if (selectedPO && shortfall > 0) {
+    Swal.fire({
+      title: 'PO Shortfall Detected',
+      html: `<div style="text-align:left;font-size:13px;line-height:1.8;">
+        Receiving <b>${totalQty}</b> unit(s).<br>
+        Pending shortfall: <b class="text-danger">${shortfall}</b> unit(s) remaining across this PO.<br><br>
+        <b>Select fulfillment action:</b>
+      </div>`,
+      icon: 'warning',
+      showCancelButton: true,
+      showDenyButton: true,
+      confirmButtonColor: '#059669',
+      denyButtonColor: '#d97706',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: '<i class="fa-solid fa-copy me-1"></i> Create Backorder PO',
+      denyButtonText: '<i class="fa-solid fa-box-archive me-1"></i> Close PO (No Backorder)',
+      cancelButtonText: 'Keep PO Open'
+    }).then(r => {
+      if (r.isConfirmed) {
+        executeSubmit(items, 'BACKORDER');
+      } else if (r.isDenied) {
+        executeSubmit(items, 'CLOSE_SHORT');
+      } else if (r.dismiss === Swal.DismissReason.cancel) {
+        executeSubmit(items, 'KEEP_OPEN');
+      } else {
+        release();
+      }
+    });
+  } else {
+    Swal.fire({
+      title: selectedPO ? 'Full PO Receipt' : 'Authorize Transaction',
+      html: selectedPO ? `All items in <b>${e_(selectedPO)}</b> are 100% fulfilled. Confirm logging entries?` : `Log <b>${items.length}</b> item(s) to stock?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#1e40af',
+      confirmButtonText: 'Yes, Authorize',
+      cancelButtonText: 'Cancel'
+    }).then(r => {
+      if (r.isConfirmed) executeSubmit(items, 'FULFILL');
+      else release();
+    });
+  }
+}
+
+function executeSubmit(items, poAction) {
+  setSubmitBusy(true);
+  Swal.fire({
+    title: 'Processing Transaction...',
+    html: '<div class="py-2"><i class="fa-solid fa-spinner fa-spin fa-2x text-primary mb-2"></i><br>Writing stock ledger and updating balances...</div>',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false
+  });
+
+  const selectedPO = $('#formPoList').val();
+  let vendor = $('#formVendor').val();
+  if (selectedPO && uniquePOs[selectedPO]) vendor = uniquePOs[selectedPO].vendor;
+
+  const common = {
+    type: $('#formType').val(),
+    method: $('#formMethod').val(),
+    vendorName: (vendorMap[vendor] && vendorMap[vendor].name) || vendor || '',
+    invoiceNo: $('#formInvoiceNo').val(),
+    voucherNo: $('#formVoucherNo').val(),
+    partyDetails: $('#formPartyDetails').val(),
+    referenceNo: $('#formReferenceNo').val() || selectedPO,
+    remarks: $('#formRemarks').val(),
+    poNumber: selectedPO || null,
+    poAction: poAction || 'KEEP_OPEN'
+  };
+  const batch = items.map(i => Object.assign({}, common, i));
+
+  gs().withSuccessHandler(res => {
+    setSubmitBusy(false);
+    invalidateCache();
+    if (!res || !res.ok) {
+      Swal.fire({ icon: 'warning', title: 'Not Processed', text: (res && res.message) || 'Request was not processed.', confirmButtonColor: '#d97706' });
+      return;
+    }
+    Swal.fire({ icon: 'success', title: 'Success', text: res.message, confirmButtonColor: '#059669', timer: 1500, showConfirmButton: false });
+    resetForm();
+    applyDynamic(res.dyn);
+    handleMenuClick('OVERVIEW', document.querySelector('.sidebar-menu a:first-child'));
+  }).withFailureHandler(err => {
+    setSubmitBusy(false);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#dc2626' });
+  }).processStock(batch);
+}
+
+function resetForm() {
+  $('#withoutBillCheck').prop('checked', false);
+  $('#formInvoiceNo').prop('readonly', false).removeClass('bg-light fw-bold text-secondary');
+  $('#formRemarks, #formInvoiceNo, #formVoucherNo, #formPartyDetails, #formReferenceNo').val('');
+  $('#formType').val('IN');
+  updateFormMethod();
+  $('#formPoList').val('').trigger('change.select2');
+  $('#formVendor').val('').prop('disabled', false).trigger('change.select2');
+  $('#locationBadge').hide(); $('#locationText').empty();
+  $('#poItemMode').hide(); $('#poReceivingBody').empty();
+  resetItemRows();
+  $('#multiItemMode').show();
+  setSubmitBusy(false);
+}
+
+/* =====================  STOCK AUDIT  ===================== */
+let auditViewInitialized = false, auditItemsCache = [], bulkAuditRows = {};
+const todayISO_ = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+
+function initializeAuditView() {
+  if (CURRENT_USER_ROLE !== 'ADMIN') return;
+  if (!auditViewInitialized) {
+    $('#auditDate, #bulkAuditDate').val(todayISO_());
+    loadAuditItems();
+    initAuditSelects();
+    auditViewInitialized = true;
+  } else { updateAuditPreview(); refreshBulkSystemStocks(); loadAuditHistory(); }
+  updateBulkValidation();
+}
+function initAuditSelects() {
+  $('#auditItem, #auditDate, #auditPhysicalStock').off('.audit').on('change.audit input.audit', function () {
+    updateAuditPreview();
+    if (this.id === 'auditItem') loadAuditHistory();
+  });
+  $('#bulkAuditDate').off('.audit').on('change.audit', refreshBulkSystemStocks);
+}
+function loadAuditItems() {
+  auditItemsCache = Object.values(itemMap);
+  const html = '<option value="">Search item...</option>' + auditItemsCache.map(i => `<option value="${e_(i.code)}">${e_(i.code + ' | ' + (i.name || ''))}</option>`).join('');
+  $('#auditItem, #bulkAuditItems').html(html);
+  safeInitSelect2('#auditItem', 'Search item...');
+  safeInitSelect2('#bulkAuditItems', 'Select multiple items...');
+}
+function setAuditMode(mode) {
+  if (CURRENT_USER_ROLE !== 'ADMIN') return;
+  const bulk = mode === 'bulk';
+  $('#auditSingleModeBtn').toggleClass('active', !bulk); $('#auditBulkModeBtn').toggleClass('active', bulk);
+  $('#auditSinglePanel').toggleClass('active', !bulk); $('#auditBulkPanel').toggleClass('active', bulk);
+  if (bulk) refreshBulkSystemStocks(); else { updateAuditPreview(); loadAuditHistory(); }
+}
+
+function updateAuditPreview() {
+  const code = $('#auditItem').val(), date = $('#auditDate').val(), pt = $('#auditPhysicalStock').val();
+  const physical = pt === '' ? null : Number(pt);
+  $('#auditPhysicalPreview').text(physical === null || !Number.isFinite(physical) ? '0' : physical);
+  if (!code || !date) {
+    $('#auditSystemStock, #auditVariancePreview').text('—');
+    $('#auditState').html('<span class="badge bg-light text-secondary border">Waiting</span>');
+    return;
+  }
+  $('#auditSystemStock, #auditVariancePreview').text('…');
+  $('#auditState').html('<span class="badge bg-light text-primary border"><i class="fa-solid fa-spinner fa-spin me-1"></i>Calculating</span>');
+  gs().withSuccessHandler(r => {
+    const sys = Number(r && r.stock);
+    if (!Number.isFinite(sys)) { $('#auditSystemStock, #auditVariancePreview').text('—'); $('#auditState').html('<span class="badge bg-danger text-white">Error</span>'); return; }
+    $('#auditSystemStock').text(sys);
+    if (physical === null || !Number.isFinite(physical) || physical < 0) { $('#auditVariancePreview').text('—'); $('#auditState').html('<span class="badge bg-warning text-dark">Enter count</span>'); return; }
+    const v = physical - sys;
+    $('#auditVariancePreview').text((v > 0 ? '+' : '') + v);
+    $('#auditState').html(`<span class="badge ${v === 0 ? 'bg-success' : 'bg-warning text-dark'}">${v === 0 ? 'Matched' : 'Variance'}</span>`);
+  }).getSystemStockForAudit(code, date);
+}
+
+function previewAuditAdjustment() {
+  const itemCode = $('#auditItem').val(), auditDate = $('#auditDate').val(), ps = $('#auditPhysicalStock').val();
+  const reason = $('#auditReason').val(), auditReference = $('#auditReference').val().trim().toUpperCase(), remarks = $('#auditRemarks').val().trim();
+  if (!itemCode || !auditDate || ps === '' || Number(ps) < 0 || !reason || !auditReference) {
+    Swal.fire({ icon: 'error', title: 'Incomplete Fields', text: 'All required fields must be filled.', confirmButtonColor: '#1e40af' }); return;
+  }
+  const sys = Number($('#auditSystemStock').text()) || 0, physical = Number(ps), v = physical - sys;
+  Swal.fire({
+    title: 'Confirm Audit Adjustment?',
+    html: `<div style="text-align:left;font-size:13px;line-height:1.8;padding:4px;"><b>Item:</b> ${e_(itemCode)}<br><b>Audit Date:</b> ${e_(formatTableDate(auditDate))}<br><b>System Stock:</b> ${sys}<br><b>Physical Count:</b> ${physical}<br><b>Net Adjustment:</b> <span class="fw-bold ${v < 0 ? 'text-danger' : 'text-success'}">${v > 0 ? '+' : ''}${v}</span><br><b>Reason:</b> ${e_(reason)}<br><b>Reference:</b> ${e_(auditReference)}</div>`,
+    icon: 'warning', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#94a3b8',
+    confirmButtonText: 'Yes, Post Adjustment', cancelButtonText: 'Cancel', reverseButtons: true
+  }).then(r => { if (r.isConfirmed) postAuditAdjustment({ itemCode, auditDate, physicalStock: physical, reason, auditReference, remarks }); });
+}
+
+function postAuditAdjustment(payload) {
+  const btn = $('#auditSinglePostBtn'), label = '<i class="fa-solid fa-shield-halved me-1"></i> Authorize & Post';
+  btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Posting...');
+  gs().withSuccessHandler(res => {
+    invalidateCache(); btn.prop('disabled', false).html(label);
+    Swal.fire({ icon: 'success', title: 'Audit Posted', text: res.message, confirmButtonColor: '#059669' });
+    resetAuditForm(); loadAuditHistory();
+  }).withFailureHandler(err => { btn.prop('disabled', false).html(label); Swal.fire('Audit Failed', err.message, 'error'); })
+    .createStockAdjustment(payload);
+}
+
+function loadAuditHistory() {
+  const code = $('#auditItem').val();
+  if (!code) { $('#auditHistoryBody').html('<tr><td colspan="7" class="audit-empty">Select an item to view history.</td></tr>'); return; }
+  gs().withSuccessHandler(rows => {
+    if (!rows || !rows.length) { $('#auditHistoryBody').html('<tr><td colspan="7" class="audit-empty">No posted audit records.</td></tr>'); return; }
+    rows.sort((a, b) => ((parseAnyDate(b.auditDate || b.recordedAt) || 0) - (parseAnyDate(a.auditDate || a.recordedAt) || 0)));
+    $('#auditHistoryBody').html(rows.map(r => {
+      const a = Number(r.adjustmentQty) || 0;
+      return `<tr><td>${e_(formatTableDate(r.auditDate || '-'))}</td><td><b>${e_(r.reference || '-')}</b></td><td>${r.systemStockBefore}</td><td>${r.physicalStock}</td><td class="fw-bold ${a < 0 ? 'text-danger' : 'text-success'}">${a > 0 ? '+' : ''}${a}</td><td>${e_(r.adjustedBy || '-')}</td><td><span class="badge bg-success">POSTED</span></td></tr>`;
+    }).join(''));
+  }).getStockAuditHistory(code, 50);
+}
+
+function resetAuditForm() {
+  $('#auditItem').val('').trigger('change.select2');
+  $('#auditPhysicalStock, #auditReference, #auditRemarks, #auditReason').val('');
+  updateAuditPreview();
+}
+
+/* ---- bulk audit ---- */
+const BULK_REASONS = ['Physical Count Variance', 'Damage / Scrap', 'Cycle Count'];
+
+function addSelectedBulkItems() {
+  const sel = $('#bulkAuditItems').val() || [];
+  if (!sel.length) return;
+  sel.forEach(code => {
+    if (bulkAuditRows[code]) return;
+    const item = itemMap[code] || {}, rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    bulkAuditRows[code] = {
+      itemCode: String(code).trim(), itemName: item.name || String(code).trim(), systemStock: null, physicalStock: '',
+      reason: BULK_REASONS[0], auditReference: `AUD-${todayISO_().replace(/-/g, '')}-${String(code).slice(-4).toUpperCase()}-${rand}`, remarks: ''
+    };
+  });
+  $('#bulkAuditItems').val(null).trigger('change.select2');
+  renderBulkAuditRows();
+  refreshBulkSystemStocks();
+}
+function removeBulkItem(code) { delete bulkAuditRows[code]; renderBulkAuditRows(); }
+
+function renderBulkAuditRows() {
+  const rows = Object.values(bulkAuditRows);
+  $('#bulkItemCount').text(`${rows.length} item${rows.length === 1 ? '' : 's'}`);
+  if (!rows.length) { $('#bulkAuditBody').html('<tr><td colspan="9" class="audit-empty">No items added yet.</td></tr>'); updateBulkValidation(); return; }
+  $('#bulkAuditBody').html(rows.map(r => {
+    const sys = r.systemStock === null ? null : Number(r.systemStock);
+    const phys = r.physicalStock === '' ? null : Number(r.physicalStock);
+    const v = (sys !== null && phys !== null) ? phys - sys : null;
+    const c = e_(r.itemCode);
+    return `<tr>
+      <td class="fw-bold text-primary">${c}</td><td>${e_(r.itemName)}</td>
+      <td class="fw-bold">${sys === null ? '…' : sys}</td>
+      <td><input type="number" min="0" class="form-control form-control-sm text-center bulk-physical" data-code="${c}" value="${r.physicalStock}" style="max-width:90px;margin:0 auto;"></td>
+      <td class="fw-bold bulk-variance-cell ${v !== null && v < 0 ? 'text-danger' : 'text-success'}">${v === null ? '—' : (v > 0 ? '+' : '') + v}</td>
+      <td><select class="form-select form-select-sm bulk-reason" data-code="${c}">${BULK_REASONS.map(x => `<option${x === r.reason ? ' selected' : ''}>${x}</option>`).join('')}</select></td>
+      <td><input type="text" class="form-control form-control-sm text-center bulk-reference" data-code="${c}" value="${e_(r.auditReference)}"></td>
+      <td><input type="text" class="form-control form-control-sm text-center bulk-remarks" data-code="${c}" value="${e_(r.remarks)}"></td>
+      <td><button type="button" class="btn btn-sm btn-outline-danger bulk-remove" data-code="${c}"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+  }).join(''));
+  updateBulkValidation();
+}
+/* delegated handlers: bound once, no re-binding on every render */
+$(document).on('input', '.bulk-physical', function () {
+  const code = $(this).data('code'), row = bulkAuditRows[code];
+  if (!row) return;
+  row.physicalStock = $(this).val();
+  const v = (row.systemStock !== null && row.physicalStock !== '') ? Number(row.physicalStock) - Number(row.systemStock) : null;
+  const $c = $(this).closest('tr').find('.bulk-variance-cell').removeClass('text-danger text-success');
+  if (v !== null) $c.addClass(v < 0 ? 'text-danger' : 'text-success').text((v > 0 ? '+' : '') + v); else $c.text('—');
+  updateBulkValidation();
+});
+$(document).on('change', '.bulk-reason', function () { bulkAuditRows[$(this).data('code')].reason = $(this).val(); });
+$(document).on('input', '.bulk-reference', function () { bulkAuditRows[$(this).data('code')].auditReference = $(this).val().toUpperCase(); updateBulkValidation(); });
+$(document).on('input', '.bulk-remarks', function () { bulkAuditRows[$(this).data('code')].remarks = $(this).val(); });
+$(document).on('click', '.bulk-remove', function () { removeBulkItem($(this).data('code')); });
+
+function clearBulkSelection() { $('#bulkAuditItems').val(null).trigger('change.select2'); }
+
+function refreshBulkSystemStocks() {
+  const rows = Object.values(bulkAuditRows), date = $('#bulkAuditDate').val();
+  if (!rows.length || !date) return;
+  gs().withSuccessHandler(res => {
+    Object.keys(bulkAuditRows).forEach(c => { bulkAuditRows[c].systemStock = res && res[c] !== undefined ? Number(res[c]) : null; });
+    renderBulkAuditRows();
+  }).getSystemStockForAuditBulk(rows.map(r => r.itemCode), date);
+}
+
+function validateBulkRows_() {
+  const rows = Object.values(bulkAuditRows);
+  if (!rows.length) return ['Add at least one item to the batch.'];
+  const errs = [];
+  rows.forEach(r => {
+    if (r.physicalStock === '') errs.push(`${r.itemCode}: missing physical quantity.`);
+    if (!r.auditReference) errs.push(`${r.itemCode}: missing reference.`);
+  });
+  return errs;
+}
+function updateBulkValidation() {
+  const rows = Object.values(bulkAuditRows);
+  if (!rows.length) { $('#bulkValidationSummary').html('Select items above to begin batch audit.'); return; }
+  const bad = rows.some(r => r.physicalStock === '' || !r.auditReference);
+  $('#bulkValidationSummary').html(bad ? '<span class="text-danger fw-bold">Incomplete entries in batch.</span>' : '<span class="text-success fw-bold">Batch ready to post.</span>');
+}
+
+function previewBulkAudit() {
+  const errs = validateBulkRows_();
+  if (errs.length) { Swal.fire({ icon: 'error', title: 'Incomplete Audit Batch', html: `<div style="text-align:left;font-size:13px;">Please complete physical counts and references:<br><br>${errs.slice(0, 5).map(e_).join('<br>')}</div>`, confirmButtonColor: '#1e40af' }); return; }
+  const rows = Object.values(bulkAuditRows);
+  const total = rows.reduce((s, r) => s + (Number(r.physicalStock) - Number(r.systemStock)), 0);
+  Swal.fire({
+    title: 'Confirm Bulk Audit Submission?',
+    html: `<div style="text-align:left;font-size:13px;line-height:1.8;padding:4px;"><div class="p-2 mb-2 rounded bg-light border"><b>Audit Date:</b> ${e_(formatTableDate($('#bulkAuditDate').val()))}<br><b>Total Batch Items:</b> ${rows.length} item(s)<br><b>Net Physical Variance:</b> <span class="fw-bold ${total < 0 ? 'text-danger' : 'text-success'}">${total > 0 ? '+' : ''}${total} unit(s)</span></div><p class="text-muted small mb-0"><i class="fa-solid fa-shield-halved me-1"></i> This will create immutable audit adjustment records and update current inventory balances.</p></div>`,
+    icon: 'warning', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#94a3b8',
+    confirmButtonText: '<i class="fa-solid fa-check-circle me-1"></i> Authorize & Post Batch', cancelButtonText: 'Cancel', reverseButtons: true
+  }).then(r => { if (r.isConfirmed) postBulkAudit(); });
+}
+
+function postBulkAudit() {
+  const date = $('#bulkAuditDate').val();
+  const rows = Object.values(bulkAuditRows).map(r => ({ itemCode: r.itemCode, auditDate: date, physicalStock: Number(r.physicalStock), reason: r.reason, auditReference: r.auditReference, remarks: r.remarks || '' }));
+  Swal.fire({ title: 'Posting Audit Adjustments...', html: '<div class="py-2"><i class="fa-solid fa-spinner fa-spin fa-2x text-primary mb-2"></i><br>Writing adjustments and recalculating balances. Please wait...</div>', allowOutsideClick: false, showConfirmButton: false });
+  $('#bulkPostBtn').prop('disabled', true);
+  gs().withSuccessHandler(res => {
+    invalidateCache(); $('#bulkPostBtn').prop('disabled', false);
+    Swal.fire({ icon: 'success', title: 'Batch Posted Successfully', text: res.message || 'Audit adjustments posted successfully!', confirmButtonColor: '#059669' });
+    resetBulkAudit();
+  }).withFailureHandler(err => {
+    $('#bulkPostBtn').prop('disabled', false);
+    Swal.fire({ icon: 'error', title: 'Audit Submission Failed', text: err.message || 'An error occurred while posting audit adjustments.', confirmButtonColor: '#dc2626' });
+  }).createStockAdjustments(rows);
+}
+function resetBulkAudit() { bulkAuditRows = {}; $('#bulkAuditItems').val(null).trigger('change.select2'); renderBulkAuditRows(); }
+
+/* =====================  LOGISTICS MANIFEST  ===================== */
+let globalVendorsData = [];
+function searchVendors() {
+  const loc = document.getElementById('baseLoc').value.trim();
+  if (!loc) return;
+  $('#routeErrorBox').hide(); $('#routeLoader').show();
+  gs().withSuccessHandler(data => {
+    $('#routeLoader').hide();
+    globalVendorsData = data || [];
+    $('#resultsContainer').html(globalVendorsData.map((it, i) => `
+      <label class="vendor-item"><input type="checkbox" value="${i}" class="vendor-checkbox">
+        <div><b>${e_(it.vendor)}</b> (${e_(it.distance)} KM)<br><small class="text-muted">${e_(it.location)} | Material: ${e_(it.material)}</small></div></label>`).join('')
+      || '<p class="text-center text-muted">No vendors found.</p>');
+    $('#resultsCard').show();
+  }).withFailureHandler(err => { $('#routeLoader').hide(); $('#routeErrorBox').text(err.message).show(); }).getNearbyVendors(loc);
+}
+function toggleAllRoutes(btn) {
+  const all = btn.innerText === "Select All";
+  document.querySelectorAll('.vendor-checkbox').forEach(c => c.checked = all);
+  btn.innerText = all ? "Deselect All" : "Select All";
+}
+function printManifest() {
+  const checked = document.querySelectorAll('.vendor-checkbox:checked');
+  if (!checked.length) { Swal.fire({ icon: 'info', title: 'Select vendors', text: 'Tick at least one vendor first.' }); return; }
+  const c = 'padding:8px;border:1px solid #cbd5e1;text-align:center;';
+  const rows = Array.from(checked).map((cb, i) => {
+    const it = globalVendorsData[cb.value];
+    return `<tr><td style="${c}">${i + 1}</td><td style="${c}">${e_(it.vendor)}</td><td style="${c}">${e_(it.location)}</td><td style="${c}">${e_(it.material)}</td><td style="${c}">${e_(it.distance)} KM</td><td style="border:1px solid #cbd5e1;"></td></tr>`;
+  }).join('');
+  printHtml_('Manifest', `<h3 style="text-align:center;color:#1e40af;">DAILY LOGISTICS MANIFEST</h3><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#f1f5f9;">${['#','Vendor','Location','Material','Dist','Sign'].map(h => `<th style="${c}">${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`);
+}
+</script>
+</body>
+</html>
